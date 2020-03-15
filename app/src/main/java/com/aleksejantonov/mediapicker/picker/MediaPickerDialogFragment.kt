@@ -5,29 +5,36 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.aleksejantonov.mediapicker.BuildConfig
-import com.aleksejantonov.mediapicker.base.BaseBottomSheetDialogFragment
 import com.aleksejantonov.mediapicker.R
+import com.aleksejantonov.mediapicker.SL
+import com.aleksejantonov.mediapicker.base.BaseExpandableBottomSheet
 import com.aleksejantonov.mediapicker.base.DiffCalculator
 import com.aleksejantonov.mediapicker.base.DiffListItem
 import com.aleksejantonov.mediapicker.base.animateVisibility
 import com.aleksejantonov.mediapicker.base.createImageFile
+import com.aleksejantonov.mediapicker.base.getPxFromDp
+import com.aleksejantonov.mediapicker.base.withArguments
 import com.aleksejantonov.mediapicker.picker.delegate.CameraCaptureDelegate
 import com.aleksejantonov.mediapicker.picker.delegate.MediaItemDelegate
 import com.aleksejantonov.mediapicker.picker.delegate.items.MediaItem
+import com.arellomobile.mvp.presenter.InjectPresenter
+import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.hannesdorfmann.adapterdelegates3.ListDelegationAdapter
 import kotlinx.android.synthetic.main.dialog_media_picker.*
+import timber.log.Timber
 import java.io.IOException
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
+import kotlin.math.max
 
-class MediaPickerDialogFragment : BaseBottomSheetDialogFragment(), MediaPickerView {
+class MediaPickerDialogFragment : BaseExpandableBottomSheet(), MediaPickerView {
 
     override val layoutRes = R.layout.dialog_media_picker
+    override val slideOffsetListener: (Float) -> Unit = ::offsetChanges
 
     private val singleImage: Boolean
         get() = arguments?.getBoolean(SINGLE_IMAGE, true) ?: true
@@ -36,17 +43,24 @@ class MediaPickerDialogFragment : BaseBottomSheetDialogFragment(), MediaPickerVi
         get() = arguments?.getString(OBSERVER_ID) ?: ""
 
     private val adapter by lazy { ImagesAdapter() }
-    private val presenter: MediaPickerPresenter by lazy {
-        MediaPickerPresenter().apply { putInfo(singleImage, observerId) }
-    }
 
     private var lastPhotoUri: Uri? = null
     private var lastPhotoPath: String? = null
+
+    @InjectPresenter
+    lateinit var presenter: MediaPickerPresenter
+
+    @ProvidePresenter
+    fun providePresenter(): MediaPickerPresenter =
+        MediaPickerPresenter(SL.mediaProvider, SL.bottomSheetRouter)
+            .apply { putInfo(singleImage, observerId) }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initList()
         done.setOnClickListener { presenter.performDoneAction() }
+        closeIcon.setOnClickListener { presenter.onCloseClick() }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -106,10 +120,10 @@ class MediaPickerDialogFragment : BaseBottomSheetDialogFragment(), MediaPickerVi
                     val photoFile = try {
                         createImageFile(requireContext())
                     } catch (e: IOException) {
-                        Log.e("Dispatch picture", "Image file could not be created: $e")
+                        Timber.e("Image file could not be created: $e")
                         null
                     } catch (e: IllegalStateException) {
-                        Log.e("Dispatch picture", "Context require error: $e")
+                        Timber.e("Context require error: $e")
                         null
                     }
 
@@ -124,7 +138,7 @@ class MediaPickerDialogFragment : BaseBottomSheetDialogFragment(), MediaPickerVi
                             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, lastPhotoUri)
                             startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
                         } catch (e: IllegalArgumentException) {
-                            Log.e("Dispatch picture", "The path not supported by the provider: $e")
+                            Timber.e("The path not supported by the provider: $e")
                         }
                     }
                 }
@@ -140,16 +154,26 @@ class MediaPickerDialogFragment : BaseBottomSheetDialogFragment(), MediaPickerVi
         }
     }
 
+    private fun offsetChanges(offset: Float) {
+        substrate.alpha = max(offset, 0.8f)
+        closeIcon.alpha = max(0f, offset)
+        divider.alpha = max(0f, offset)
+        label.translationX = context?.getPxFromDp((max(offset * 40, 0f)).toInt())?.toFloat() ?: 0f
+        if (offset == 1f) {
+            substrate.setBackgroundResource(R.drawable.background_square_white)
+        } else {
+            substrate.setBackgroundResource(R.drawable.background_top_rounded_white_8dp)
+        }
+    }
+
     companion object {
         const val REQUEST_IMAGE_CAPTURE = 3581
         private const val SINGLE_IMAGE = "SINGLE_IMAGE"
         private const val OBSERVER_ID = "OBSERVER_ID"
 
-        fun newInstance(singleImage: Boolean, observerId: String) = MediaPickerDialogFragment().apply {
-            arguments = Bundle().apply {
-                putBoolean(SINGLE_IMAGE, singleImage)
-                putString(OBSERVER_ID, observerId)
-            }
+        fun newInstance(singleImage: Boolean, observerId: String) = MediaPickerDialogFragment().withArguments {
+            putBoolean(SINGLE_IMAGE, singleImage)
+            putString(OBSERVER_ID, observerId)
         }
     }
 

@@ -21,14 +21,38 @@ android {
     }
 }
 
+ext {
+    rxJavaVersion = '2.2.9'
+    rxKotlinVersion = '2.3.0'
+    rxAndroidVersion = '2.1.1'
+    rxRelayVersion = '2.1.0'
+    adapterDelegatesVersion = '3.0.1'
+    glideVersion = '4.11.0'
+    moxyVersion = '1.5.3'
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation "com.google.android.material:material:1.2.0-alpha05"
-    implementation 'com.hannesdorfmann:adapterdelegates3:3.0.1'
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    kapt 'com.github.bumptech.glide:compiler:4.11.0'
+    implementation "com.google.android.material:material:1.1.0"
+
+    implementation "com.hannesdorfmann:adapterdelegates3:$adapterDelegatesVersion"
+
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
+
+    implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
+    implementation "io.reactivex.rxjava2:rxkotlin:$rxKotlinVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
+    implementation "com.jakewharton.rxrelay2:rxrelay:$rxRelayVersion"
+
+    implementation "com.arello-mobile:moxy:$moxyVersion"
+    implementation "com.arello-mobile:moxy-android:$moxyVersion"
+    implementation "com.arello-mobile:moxy-app-compat:$moxyVersion"
+    kapt "com.arello-mobile:moxy-compiler:$moxyVersion"
+
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 }

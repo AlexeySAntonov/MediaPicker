@@ -2,11 +2,31 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mediaPickerRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_top_rounded_8dp"
     app:behavior_hideable="true"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+    <View
+        android:id="@+id/substrate"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:alpha="0.8"
+        android:background="@drawable/background_top_rounded_white_8dp" />
+
+    <ImageView
+        android:id="@+id/closeIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/label"
+        android:layout_alignBottom="@+id/label"
+        android:layout_marginStart="16dp"
+        android:alpha="0"
+        android:src="@drawable/ic_close_clear_24dp"
+        android:tint="@color/appGrey"
+        tools:alpha="1" />
 
     <TextView
         android:id="@+id/label"
@@ -15,14 +35,15 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:ellipsize="end"
         android:fontFamily="sans-serif-medium"
         android:maxLines="1"
-        android:textColor="@color/appBlack"
+        android:textColor="@color/appTextColor"
         android:textSize="18sp"
-        tools:text="@string/media_picker_select_images_title" />
+        tools:text="@string/media_picker_select_images_title"
+        tools:translationX="40dp" />
 
     <ImageButton
         android:id="@+id/done"
@@ -30,11 +51,13 @@
         android:layout_height="44dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="6dp"
         android:layout_marginEnd="10dp"
         android:background="@drawable/background_circle_green"
         android:fontFamily="sans-serif-medium"
         android:src="@drawable/ic_done_24dp"
+        android:textColor="@color/appGrey"
+        android:textSize="16sp"
         android:visibility="gone"
         tools:visibility="visible" />
 
@@ -53,7 +76,7 @@
         android:paddingTop="2dp"
         android:paddingEnd="6dp"
         android:paddingBottom="2dp"
-        android:textColor="@android:color/white"
+        android:textColor="@color/white"
         android:textSize="12sp"
         android:visibility="gone"
         tools:ignore="SmallSp"
@@ -65,12 +88,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="64dp"
-        android:background="@drawable/background_top_rounded_8dp"
-        android:backgroundTint="@android:color/white"
+        android:layout_marginTop="56dp"
+        android:background="@drawable/background_top_rounded_white_8dp"
         android:padding="4dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="3"
         tools:listitem="@layout/item_media" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="56dp"
+        android:alpha="0"
+        android:background="@color/divider"
+        tools:alpha="1" />
 
 </RelativeLayout>

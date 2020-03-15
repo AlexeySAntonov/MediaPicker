@@ -3,7 +3,6 @@ package com.aleksejantonov.mediapicker.base
 import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.LayoutRes
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -12,15 +11,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
-import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.RecyclerView
+import timber.log.Timber
 
-abstract class BaseBottomSheetDialogFragment : DialogFragment() {
+abstract class BaseExpandableBottomSheet : MvpAppCompatDialogFragment() {
 
     @get:LayoutRes
     protected abstract val layoutRes: Int
+    protected abstract val slideOffsetListener: (Float) -> Unit
 
     private var behavior: BottomSheetBehavior<FrameLayout>? = null
+    private var currentDim = DEFAULT_DIM
 
     private val bottomSheetCallback by lazy {
         object : BottomSheetBehavior.BottomSheetCallback() {
@@ -28,7 +29,20 @@ abstract class BaseBottomSheetDialogFragment : DialogFragment() {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) dismiss()
             }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) = Unit
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                slideOffsetListener.invoke(slideOffset)
+                if (slideOffset == 1f) {
+                    if (currentDim != EXPANDED_DIM) {
+                        dialog?.window?.setDimAmount(EXPANDED_DIM)
+                        currentDim = EXPANDED_DIM
+                    }
+                } else {
+                    if (currentDim != DEFAULT_DIM) {
+                        dialog?.window?.setDimAmount(DEFAULT_DIM)
+                        currentDim = DEFAULT_DIM
+                    }
+                }
+            }
         }
     }
 
@@ -48,13 +62,18 @@ abstract class BaseBottomSheetDialogFragment : DialogFragment() {
             override fun onGlobalLayout() {
                 val bottomSheet = dialog?.findViewById(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout
                 context?.let { bottomSheet.background = ColorDrawable(getColor(android.R.color.transparent)) }
-                behavior = BottomSheetBehavior.from(bottomSheet)
-                behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                behavior?.peekHeight = context?.getScreenHeight()?.let { it / 2 } ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
-                behavior?.addBottomSheetCallback(bottomSheetCallback)
+                setupBehavior(bottomSheet)
+                dialog?.window?.setDimAmount(DEFAULT_DIM)
                 view.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         })
+    }
+
+    private fun setupBehavior(bottomSheet: FrameLayout) {
+        behavior = BottomSheetBehavior.from(bottomSheet)
+        behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+        behavior?.peekHeight = context?.getScreenHeight()?.let { it / 2 } ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
+        behavior?.addBottomSheetCallback(bottomSheetCallback)
     }
 
     override fun onDestroyView() {
@@ -62,11 +81,16 @@ abstract class BaseBottomSheetDialogFragment : DialogFragment() {
         for (i in 0 until (viewGroup?.childCount ?: 0)) {
             if (viewGroup?.getChildAt(i) is RecyclerView) {
                 (viewGroup.getChildAt(i) as? RecyclerView)?.adapter = null
-                Log.d("Bottom sheet: ", "recycler adapter released: ${viewGroup.getChildAt(i)}")
+                Timber.d("Bottom sheet recycler adapter released: ${viewGroup.getChildAt(i)}")
             }
         }
         behavior?.removeBottomSheetCallback(bottomSheetCallback)
-        Log.d("Bottom sheet: ", "behavior callback removed")
+        Timber.d("Bottom sheet behavior callback removed")
         super.onDestroyView()
+    }
+
+    companion object {
+        private const val DEFAULT_DIM = 0.5f
+        private const val EXPANDED_DIM = 0f
     }
 }

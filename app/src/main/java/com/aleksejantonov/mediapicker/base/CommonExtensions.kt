@@ -3,6 +3,8 @@ package com.aleksejantonov.mediapicker.base
 import android.app.Activity
 import android.content.Context
 import android.graphics.Point
+import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
@@ -55,4 +57,21 @@ fun formatDuration(duration: Int, isLong: Boolean): String {
     } else {
         String.format(Locale.US, "%d:%02d:%02d", h, m, s)
     }
+}
+
+fun <E> MutableCollection<E>.replaceAll(collection: Collection<E>) {
+    clear()
+    addAll(collection)
+}
+
+fun Context.getPxFromDp(dpValue: Int): Int {
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP, dpValue.toFloat(), resources.displayMetrics
+    )
+        .toInt()
+}
+
+fun <T : Fragment> T.withArguments(action: Bundle.() -> Unit): T {
+    arguments = Bundle().apply(action)
+    return this
 }

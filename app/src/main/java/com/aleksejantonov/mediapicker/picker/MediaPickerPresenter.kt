@@ -1,27 +1,26 @@
 package com.aleksejantonov.mediapicker.picker
 
 import android.net.Uri
+import com.aleksejantonov.mediapicker.base.BottomSheetRouter
+import com.aleksejantonov.mediapicker.base.RxPresenter
+import com.aleksejantonov.mediapicker.base.replaceAll
+import com.aleksejantonov.mediapicker.mediaprovider.IMediaProvider
+import com.aleksejantonov.mediapicker.picker.delegate.items.CameraCaptureItem
 import com.aleksejantonov.mediapicker.picker.delegate.items.MediaItem
 import com.arellomobile.mvp.InjectViewState
 import com.jakewharton.rxrelay2.PublishRelay
-import com.togezzer.android.data.providers.media.IMediaProvider
-import com.togezzer.android.ui.mediapicker.delegate.items.MediaItem
-import com.togezzer.android.ui.common.presenter.RxPresenter
-import com.togezzer.android.ui.mediapicker.delegate.items.CameraCaptureItem
-import com.togezzer.android.utils.extensions.replaceAll
-import com.togezzer.android.utils.navigation.BottomSheetRouter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.Observables
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
-import javax.inject.Inject
 
-class MediaPickerPresenter : RxPresenter<MediaPickerView>() {
-
-    private val mediaProvider: IMediaProvider
+@InjectViewState
+class MediaPickerPresenter(
+    private val mediaProvider: IMediaProvider,
     private val bottomSheetRouter: BottomSheetRouter
+) : RxPresenter<MediaPickerView>() {
 
     private var singleImage: Boolean = true
     private var observerId: String = ""
@@ -79,12 +78,16 @@ class MediaPickerPresenter : RxPresenter<MediaPickerView>() {
             val resultImages = allItems.filter { selectedItems.contains(it.uniqueId) }
             if (resultImages.isNotEmpty()) mediaProvider.multiItemsRelay.accept(observerId to resultImages.map { it.path })
         }
-        bottomSheetRouter.close()
+        onCloseClick()
     }
 
     fun handlePhotoCapture(uri: Uri, path: String) {
         if (singleImage) mediaProvider.singleImageRelay.accept(observerId to uri)
         else mediaProvider.multiItemsRelay.accept(observerId to listOf(path))
+        onCloseClick()
+    }
+
+    fun onCloseClick() {
         bottomSheetRouter.close()
     }
 

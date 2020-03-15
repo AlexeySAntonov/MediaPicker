@@ -3,10 +3,15 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
+    <color name="white">#FFFFFF</color>
     <color name="appBlack">#333436</color>
     <color name="appGreen">#65A75C</color>
     <color name="appGrey">#887D93</color>
+    <color name="appGreyLight">#E0E6ED</color>
     <color name="appGreyF5">#F5F5F5</color>
-    <color name="appWhiteTransparent">#DDFFFFFF</color>
-    <color name="appTransparent">#42000000</color>
+    <color name="appTextColor">#212121</color>
+    <color name="semiTransparent">#42000000</color>
+
+    <color name="divider">@color/appGreyLight</color>
 </resources>
