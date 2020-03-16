@@ -32,6 +32,10 @@ class MediaItemDelegate(
         viewHolder.bind(item)
     }
 
+    override fun onViewRecycled(viewHolder: RecyclerView.ViewHolder) {
+        (viewHolder as ViewHolder).releaseGlide()
+    }
+
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView = itemView.findViewById<ImageView>(R.id.image)
         private val added = itemView.findViewById<ImageView>(R.id.added)
@@ -61,5 +65,7 @@ class MediaItemDelegate(
                     .into(imageView)
             }
         }
+
+        fun releaseGlide() = Glide.with(imageView).clear(imageView)
     }
 }
