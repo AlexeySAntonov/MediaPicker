@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.base
+package com.aleksejantonov.mediapicker.base.ui
 
 import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
@@ -11,10 +11,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.recyclerview.widget.RecyclerView
+import com.aleksejantonov.mediapicker.base.getColor
+import com.aleksejantonov.mediapicker.base.getScreenHeight
 import timber.log.Timber
 
-abstract class BaseExpandableBottomSheet : MvpAppCompatDialogFragment() {
+abstract class BaseExpandableBottomSheet : AppCompatDialogFragment() {
 
     @get:LayoutRes
     protected abstract val layoutRes: Int

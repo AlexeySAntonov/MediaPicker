@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.mediaprovider
+package com.aleksejantonov.mediapicker.picker.data
 
 import kotlinx.coroutines.flow.Flow
 

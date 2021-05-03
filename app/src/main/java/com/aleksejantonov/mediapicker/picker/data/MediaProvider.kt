@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.mediaprovider
+package com.aleksejantonov.mediapicker.picker.data
 
 import android.Manifest
 import android.content.Context
@@ -330,7 +330,7 @@ class MediaProvider(private val context: Context) : IMediaProvider {
         if (allMediaFolder == null) {
             mediaFolders.put(
                 RECENTS_BUCKET_ID,
-                FolderItem.default(name = "All media", previewUri = model.uri)
+              FolderItem.default(name = "All media", previewUri = model.uri)
             )
         } else {
             mediaFolders.put(RECENTS_BUCKET_ID, allMediaFolder.copy(mediaCount = allMediaFolder.mediaCount + 1))

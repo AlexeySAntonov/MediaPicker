@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.mediaprovider
+package com.aleksejantonov.mediapicker.picker.data
 
 import android.net.Uri
 import android.provider.MediaStore
@@ -15,15 +15,15 @@ import android.provider.MediaStore
  * @property uri - content://media/external/images(video)/media/4572
  */
 data class SystemMediaModel(
-    val uniqueId: Long,
-    val name: String,
-    val path: String,
-    val date: Int,
-    val duration: Long = 0L,
-    val bucketId: Int,
-    val bucketName: String,
-    val type: Type,
-    val uri: Uri = Uri.withAppendedPath(type.contentUri, uniqueId.toString()),
+  val uniqueId: Long,
+  val name: String,
+  val path: String,
+  val date: Int,
+  val duration: Long = 0L,
+  val bucketId: Int,
+  val bucketName: String,
+  val type: Type,
+  val uri: Uri = Uri.withAppendedPath(type.contentUri, uniqueId.toString()),
 ) {
 
   enum class Type(val contentUri: Uri) {

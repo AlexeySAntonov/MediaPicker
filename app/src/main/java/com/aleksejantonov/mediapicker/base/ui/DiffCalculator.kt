@@ -1,10 +1,10 @@
-package com.aleksejantonov.mediapicker.base
+package com.aleksejantonov.mediapicker.base.ui
 
 import androidx.recyclerview.widget.DiffUtil
 
 class DiffCalculator(
-        private val oldList: List<DiffListItem>,
-        private val newList: List<DiffListItem>
+  private val oldList: List<DiffListItem>,
+  private val newList: List<DiffListItem>
 ) : DiffUtil.Callback() {
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

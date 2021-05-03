@@ -1,7 +1,7 @@
 package com.aleksejantonov.mediapicker.picker.delegate.items
 
 import android.graphics.Bitmap
-import com.aleksejantonov.mediapicker.base.DiffListItem
+import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 
 data class CameraCaptureItem(
     val frame: Bitmap? = null

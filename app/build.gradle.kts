@@ -31,13 +31,13 @@ object Versions {
     const val kotlin = "1.4.32"
     const val adapterDelegatesVersion = "3.0.1"
     const val glideVersion = "4.11.0"
-    const val moxyVersion = "1.5.3"
 }
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlin}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
+    implementation("androidx.fragment:fragment-ktx:1.3.3")
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("androidx.core:core-ktx:1.3.2")
     implementation("androidx.constraintlayout:constraintlayout:2.0.4")

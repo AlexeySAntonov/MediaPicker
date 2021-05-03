@@ -1,8 +1,8 @@
 package com.aleksejantonov.mediapicker.picker.delegate.items
 
 import android.net.Uri
-import com.aleksejantonov.mediapicker.base.DiffListItem
-import com.aleksejantonov.mediapicker.mediaprovider.SystemMediaModel
+import com.aleksejantonov.mediapicker.base.ui.DiffListItem
+import com.aleksejantonov.mediapicker.picker.data.SystemMediaModel
 
 
 data class GalleryMediaItem(

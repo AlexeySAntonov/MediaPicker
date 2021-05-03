@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.base
+package com.aleksejantonov.mediapicker.base.mvvm
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler

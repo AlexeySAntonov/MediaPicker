@@ -7,33 +7,30 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.Group
-import com.aleksejantonov.mediapicker.base.DiffListItem
-import com.aleksejantonov.mediapicker.picker.delegate.items.MediaItem
 import com.hannesdorfmann.adapterdelegates3.AbsListItemAdapterDelegate
 import com.aleksejantonov.mediapicker.R
-import com.aleksejantonov.mediapicker.base.animateScale
-import com.aleksejantonov.mediapicker.base.animateVisibility
-import com.aleksejantonov.mediapicker.base.formatDuration
-import com.aleksejantonov.mediapicker.base.isVisible
+import com.aleksejantonov.mediapicker.base.*
+import com.aleksejantonov.mediapicker.base.ui.DiffListItem
+import com.aleksejantonov.mediapicker.picker.delegate.items.GalleryMediaItem
 import com.bumptech.glide.Glide
 
 class MediaItemDelegate(
-    private val listener: (MediaItem) -> Unit
-) : AbsListItemAdapterDelegate<MediaItem, DiffListItem, MediaItemDelegate.ViewHolder>() {
+    private val listener: (GalleryMediaItem) -> Unit
+) : AbsListItemAdapterDelegate<GalleryMediaItem, DiffListItem, MediaItemDelegate.ViewHolder>() {
 
-    override fun isForViewType(item: DiffListItem, items: MutableList<DiffListItem>, position: Int) = item is MediaItem
+    override fun isForViewType(item: DiffListItem, items: MutableList<DiffListItem>, position: Int) = item is GalleryMediaItem
 
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_media, parent, false)
         return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(item: MediaItem, viewHolder: ViewHolder, payloads: MutableList<Any>) {
+    override fun onBindViewHolder(item: GalleryMediaItem, viewHolder: ViewHolder, payloads: MutableList<Any>) {
         viewHolder.bind(item)
     }
 
     override fun onViewRecycled(viewHolder: RecyclerView.ViewHolder) {
-        (viewHolder as ViewHolder).releaseGlide()
+        (viewHolder as ViewHolder).onViewRecycled()
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -43,7 +40,7 @@ class MediaItemDelegate(
         private val duration = itemView.findViewById<TextView>(R.id.duration)
         private val durationGroup = itemView.findViewById<Group>(R.id.durationGroup)
 
-        fun bind(item: MediaItem) {
+        fun bind(item: GalleryMediaItem) {
             with(itemView) {
                 if (item.selected) {
                     imageView.scaleX = 1.0f
@@ -56,8 +53,8 @@ class MediaItemDelegate(
                 }
                 added.animateVisibility(item.selected)
                 empty.animateVisibility(!item.selected)
-                durationGroup.isVisible = item.type == MediaItem.Type.VIDEO
-                duration.text = formatDuration(item.duration / 1000, false)
+                durationGroup.isVisible = item.isVideo
+                duration.text = formatDuration(item.duration.toInt() / 1000, false)
                 setOnClickListener { listener.invoke(item) }
 
                 Glide.with(imageView)
@@ -66,6 +63,6 @@ class MediaItemDelegate(
             }
         }
 
-        fun releaseGlide() = Glide.with(imageView).clear(imageView)
+        fun onViewRecycled() = releaseGlide(imageView)
     }
 }

@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         bottomSheetRouter.attach(this)
         pick.setOnClickListener {
             if (Build.VERSION.SDK_INT < 23 || Build.VERSION.SDK_INT >= 23 && permissionsGranted()) {
-                bottomSheetRouter.openModalBottomSheet(MediaPickerDialogFragment.newInstance(false, "test123"))
+                bottomSheetRouter.openModalBottomSheet(MediaPickerDialogFragment.newInstance(false, 24))
             } else {
                 requestPermissions(permissions, 1212)
             }

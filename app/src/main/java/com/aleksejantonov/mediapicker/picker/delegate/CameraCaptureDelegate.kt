@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import com.aleksejantonov.mediapicker.picker.delegate.items.CameraCaptureItem
 import com.hannesdorfmann.adapterdelegates3.AbsListItemAdapterDelegate
 import com.aleksejantonov.mediapicker.R
-import com.aleksejantonov.mediapicker.base.DiffListItem
+import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 
 class CameraCaptureDelegate(
     private val listener: () -> Unit

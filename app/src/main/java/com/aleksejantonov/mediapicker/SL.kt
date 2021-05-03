@@ -1,9 +1,9 @@
 package com.aleksejantonov.mediapicker
 
 import android.content.Context
-import com.aleksejantonov.mediapicker.base.BottomSheetRouter
-import com.aleksejantonov.mediapicker.mediaprovider.IMediaProvider
-import com.aleksejantonov.mediapicker.mediaprovider.MediaProvider
+import com.aleksejantonov.mediapicker.navigation.BottomSheetRouter
+import com.aleksejantonov.mediapicker.picker.data.IMediaProvider
+import com.aleksejantonov.mediapicker.picker.data.MediaProvider
 import java.lang.ref.WeakReference
 
 object SL {

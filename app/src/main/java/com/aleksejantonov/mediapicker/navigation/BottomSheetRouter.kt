@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.base
+package com.aleksejantonov.mediapicker.navigation
 
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
