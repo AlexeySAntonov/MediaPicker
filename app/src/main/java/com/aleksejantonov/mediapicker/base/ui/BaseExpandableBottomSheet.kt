@@ -29,7 +29,9 @@ abstract class BaseExpandableBottomSheet : AppCompatDialogFragment() {
     private val bottomSheetCallback by lazy {
         object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) dismiss()
+                if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    dismiss()
+                }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -74,7 +76,7 @@ abstract class BaseExpandableBottomSheet : AppCompatDialogFragment() {
 
     private fun setupBehavior(bottomSheet: FrameLayout) {
         behavior = BottomSheetBehavior.from(bottomSheet)
-        behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+        behavior?.state = BottomSheetBehavior.STATE_EXPANDED
         behavior?.peekHeight = context?.getScreenHeight()?.let { it / 2 } ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
         behavior?.addBottomSheetCallback(bottomSheetCallback)
     }

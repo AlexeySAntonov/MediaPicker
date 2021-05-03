@@ -24,6 +24,7 @@ import com.aleksejantonov.mediapicker.base.getPxFromDp
 import com.aleksejantonov.mediapicker.base.withArguments
 import com.aleksejantonov.mediapicker.picker.delegate.CameraCaptureDelegate
 import com.aleksejantonov.mediapicker.picker.delegate.MediaItemDelegate
+import com.aleksejantonov.mediapicker.picker.delegate.items.CameraCaptureItem
 import com.aleksejantonov.mediapicker.picker.delegate.items.GalleryMediaItem
 import com.hannesdorfmann.adapterdelegates3.ListDelegationAdapter
 import kotlinx.android.synthetic.main.dialog_media_picker.*
@@ -59,7 +60,7 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
           mediaProvider = SL.mediaProvider,
           bottomSheetRouter = SL.bottomSheetRouter,
           singleImage = singleImage,
-          limit = 24
+          limit = limit
         ) as T
       }
     }
@@ -70,18 +71,28 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
     initList()
     done.setOnClickListener { viewModel.performDoneAction() }
     closeIcon.setOnClickListener { viewModel.onCloseClick() }
-    viewModel.content.observe(this, { showItems(it) })
+    viewModel.content.observe(this, {
+      if (adapter.items.isNullOrEmpty()) {
+        /**
+         * Avoid bottom sheet glitches.
+         * TODO: Use custom view or animate regular fragment instead of using the AppCompatDialogFragment with default BottomSheetBehavior
+         */
+        recyclerView.postDelayed({ showItems(it) }, 120L)
+      } else {
+        showItems(it)
+      }
+    })
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
     if (resultCode == Activity.RESULT_OK) {
       when (requestCode) {
-          REQUEST_IMAGE_CAPTURE -> {
-              if (lastPhotoUri != null && lastPhotoPath != null) {
-                  viewModel.handlePhotoCapture(lastPhotoUri!!, lastPhotoPath!!)
-              }
+        REQUEST_IMAGE_CAPTURE -> {
+          if (lastPhotoUri != null && lastPhotoPath != null) {
+            viewModel.handlePhotoCapture(lastPhotoUri!!, lastPhotoPath!!)
           }
+        }
       }
     }
   }
@@ -92,27 +103,27 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
     label.text = if (selectedCount > 0) {
       if (singleImage) {
         resources.getQuantityString(
-            R.plurals.media_picker_select_images_title_plural,
-            selectedCount,
-            selectedCount
+          R.plurals.media_picker_select_images_title_plural,
+          selectedCount,
+          selectedCount
         )
       } else {
         val selectedPhotosCount = items.filter { it is GalleryMediaItem && !it.isVideo && it.selected }.size
         when {
           selectedPhotosCount == selectedCount -> resources.getQuantityString(
-              R.plurals.media_picker_select_images_title_plural,
-              selectedCount,
-              selectedCount
+            R.plurals.media_picker_select_images_title_plural,
+            selectedCount,
+            selectedCount
           )
           selectedPhotosCount != 0 -> resources.getQuantityString(
-              R.plurals.media_picker_select_media_title_plural,
-              selectedCount,
-              selectedCount
+            R.plurals.media_picker_select_media_title_plural,
+            selectedCount,
+            selectedCount
           )
           else -> resources.getQuantityString(
-              R.plurals.media_picker_select_video_title_plural,
-              selectedCount,
-              selectedCount
+            R.plurals.media_picker_select_video_title_plural,
+            selectedCount,
+            selectedCount
           )
         }
       }
@@ -124,8 +135,6 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
       }
     }
     done.animateVisibility(selectedCount > 0)
-    count.animateVisibility(selectedCount > 0)
-    count.text = selectedCount.toString()
   }
 
   fun dispatchTakePictureIntent() {
@@ -145,9 +154,9 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
           photoFile?.also { file ->
             try {
               lastPhotoUri = FileProvider.getUriForFile(
-                  requireContext(),
-                  "${BuildConfig.APPLICATION_ID}.fileprovider",
-                  file
+                requireContext(),
+                "${BuildConfig.APPLICATION_ID}.fileprovider",
+                file
               )
               lastPhotoPath = file.absolutePath
               takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, lastPhotoUri)

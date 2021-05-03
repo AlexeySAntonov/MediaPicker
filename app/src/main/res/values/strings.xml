@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">MediaPicker</string>
     <string name="pick_label">Pick me</string>
+    <string name="done">Done</string>
     <string name="media_picker_select_images_title">Select image</string>
     <string name="media_picker_select_media_title">Select media</string>
     <plurals name="media_picker_select_images_title_plural">
