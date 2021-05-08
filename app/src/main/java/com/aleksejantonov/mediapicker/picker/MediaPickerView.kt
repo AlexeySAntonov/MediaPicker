@@ -14,6 +14,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.animation.doOnEnd
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -206,6 +207,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       cornerRadius = dpToPx(DONE_BUTTON_DIMEN.toFloat() / 2)
       setRippleColorResource(R.color.semiTransparent)
       setText(R.string.done)
+      setBackgroundColor(ContextCompat.getColor(context, R.color.appGreen))
       isVisible = false
       setOnClickListener { viewModel.performDoneAction() }
     }

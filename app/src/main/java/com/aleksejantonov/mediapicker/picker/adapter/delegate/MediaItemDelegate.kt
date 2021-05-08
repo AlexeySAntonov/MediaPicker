@@ -69,11 +69,11 @@ class MediaItemDelegate(
       if (item.selected) {
         imageView.scaleX = 1.0f
         imageView.scaleY = 1.0f
-        imageView.animateScale(0.75f)
+        imageView.animateScale(0.75f, duration = 220L)
       } else {
         imageView.scaleX = 0.75f
         imageView.scaleY = 0.75f
-        imageView.animateScale(1.0f)
+        imageView.animateScale(1.0f, duration = 220L)
       }
     }
 
