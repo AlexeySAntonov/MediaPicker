@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.picker.delegate.items
+package com.aleksejantonov.mediapicker.picker.adapter.delegate.items
 
 import android.net.Uri
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem

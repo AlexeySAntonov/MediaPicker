@@ -10,8 +10,8 @@ import com.aleksejantonov.mediapicker.navigation.BottomSheetRouter
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.picker.business.SelectionInteractor
 import com.aleksejantonov.mediapicker.picker.data.IMediaProvider
-import com.aleksejantonov.mediapicker.picker.delegate.items.CameraCaptureItem
-import com.aleksejantonov.mediapicker.picker.delegate.items.GalleryMediaItem
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.CameraCaptureItem
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine

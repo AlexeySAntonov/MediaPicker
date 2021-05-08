@@ -4,12 +4,16 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Point
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.View
+import android.view.WindowManager
+import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import java.util.*
+import kotlin.math.roundToInt
 
 fun Context.getScreenHeight(): Int {
     val size = Point()
@@ -74,4 +78,16 @@ fun Context.getPxFromDp(dpValue: Int): Int {
 fun <T : Fragment> T.withArguments(action: Bundle.() -> Unit): T {
     arguments = Bundle().apply(action)
     return this
+}
+
+fun Context.dpToPx(dp: Float): Int {
+    val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val display = wm.defaultDisplay
+    val metrics = DisplayMetrics()
+    display.getMetrics(metrics)
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics).roundToInt()
+}
+
+fun TextView.textColor(id: Int) {
+    setTextColor(ContextCompat.getColor(context, id))
 }

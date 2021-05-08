@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.picker.delegate
+package com.aleksejantonov.mediapicker.picker.adapter.delegate
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ import com.hannesdorfmann.adapterdelegates3.AbsListItemAdapterDelegate
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
-import com.aleksejantonov.mediapicker.picker.delegate.items.GalleryMediaItem
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.bumptech.glide.Glide
 
 class MediaItemDelegate(

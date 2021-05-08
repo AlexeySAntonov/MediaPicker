@@ -22,10 +22,9 @@ import com.aleksejantonov.mediapicker.base.animateVisibility
 import com.aleksejantonov.mediapicker.base.createImageFile
 import com.aleksejantonov.mediapicker.base.getPxFromDp
 import com.aleksejantonov.mediapicker.base.withArguments
-import com.aleksejantonov.mediapicker.picker.delegate.CameraCaptureDelegate
-import com.aleksejantonov.mediapicker.picker.delegate.MediaItemDelegate
-import com.aleksejantonov.mediapicker.picker.delegate.items.CameraCaptureItem
-import com.aleksejantonov.mediapicker.picker.delegate.items.GalleryMediaItem
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.CameraCaptureDelegate
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.MediaItemDelegate
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.hannesdorfmann.adapterdelegates3.ListDelegationAdapter
 import kotlinx.android.synthetic.main.dialog_media_picker.*
 import timber.log.Timber
