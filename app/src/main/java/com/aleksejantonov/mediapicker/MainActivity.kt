@@ -32,7 +32,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
   override fun onPause() {
     super.onPause()
-    mediaPickerView?.let { modalHost.removeView(it) }
+    mediaPickerView?.let {
+      modalHost.removeView(it)
+      mediaPickerView = null
+    }
   }
 
   override fun onBackPressed() {

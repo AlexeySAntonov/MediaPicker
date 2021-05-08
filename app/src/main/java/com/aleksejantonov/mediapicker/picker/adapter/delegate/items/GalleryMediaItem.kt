@@ -14,18 +14,16 @@ data class GalleryMediaItem(
     val bucketName: String,
     val isVideo: Boolean,
     val selected: Boolean,
+    val orderNumber: Int,
 ) : DiffListItem {
 
-    override fun isTheSame(other: DiffListItem): Boolean = other is GalleryMediaItem
-            && other.id == this.id
-
-    override fun isContentTheSame(other: DiffListItem): Boolean = other is GalleryMediaItem
-            && this == other
+    override fun itemId(): Long = id
 
     companion object {
         fun from(
             systemMediaModel: SystemMediaModel,
             selected: Boolean,
+            orderNumber: Int,
         ) = with(systemMediaModel) {
             GalleryMediaItem(
                 id = uniqueId,
@@ -36,6 +34,7 @@ data class GalleryMediaItem(
                 bucketName = bucketName,
                 isVideo = type == SystemMediaModel.Type.VIDEO,
                 selected = selected,
+                orderNumber = orderNumber
             )
         }
 

@@ -7,7 +7,5 @@ data class CameraCaptureItem(
     val frame: Bitmap? = null
 ) : DiffListItem {
 
-    override fun isTheSame(other: DiffListItem): Boolean = other is CameraCaptureItem
-    override fun isContentTheSame(other: DiffListItem): Boolean = other is CameraCaptureItem
-            && this == other
+    override fun itemId(): Long = DiffListItem.CAMERA_ITEM_ID
 }

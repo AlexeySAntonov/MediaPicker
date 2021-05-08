@@ -5,9 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.CameraCaptureItem
-import com.hannesdorfmann.adapterdelegates3.AbsListItemAdapterDelegate
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
+import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
 class CameraCaptureDelegate(
     private val listener: () -> Unit

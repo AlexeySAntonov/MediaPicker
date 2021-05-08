@@ -45,6 +45,7 @@ class MediaPickerViewModel(
             GalleryMediaItem.from(
               systemMediaModel = it,
               selected = selectedIds.contains(it.uniqueId),
+              orderNumber = selected.indexOfFirst { item -> item.id == it.uniqueId } + 1,
             )
           }
       }.collect { _content.postValue(listOf(CameraCaptureItem()) + it) }

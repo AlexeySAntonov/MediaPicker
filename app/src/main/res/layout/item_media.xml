@@ -20,32 +20,20 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@drawable/ic_photo_camera_white_24dp" />
 
-    <ImageView
-        android:id="@+id/empty"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/background_circle_border"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
-
-    <ImageView
-        android:id="@+id/added"
+    <TextView
+        android:id="@+id/checkTextView"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/background_circle_green_border"
-        android:scaleType="center"
-        android:src="@drawable/ic_done_16dp"
-        android:tint="@color/white"
-        android:visibility="gone"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
+        tools:text="24" />
 
     <View
         android:id="@+id/durationOverlay"

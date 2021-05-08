@@ -10,22 +10,17 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.aleksejantonov.mediapicker.BuildConfig
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.base.ui.BaseExpandableBottomSheet
-import com.aleksejantonov.mediapicker.base.ui.DiffCalculator
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.base.animateVisibility
 import com.aleksejantonov.mediapicker.base.createImageFile
 import com.aleksejantonov.mediapicker.base.getPxFromDp
 import com.aleksejantonov.mediapicker.base.withArguments
-import com.aleksejantonov.mediapicker.picker.adapter.delegate.CameraCaptureDelegate
-import com.aleksejantonov.mediapicker.picker.adapter.delegate.MediaItemDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
-import com.hannesdorfmann.adapterdelegates3.ListDelegationAdapter
 import kotlinx.android.synthetic.main.dialog_media_picker.*
 import timber.log.Timber
 import java.io.IOException
@@ -44,7 +39,7 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
   private val limit: Int
     get() = arguments?.getInt(LIMIT) ?: 1
 
-  private val adapter by lazy { ImagesAdapter() }
+//  private val adapter by lazy { ImagesAdapter() }
 
   private var lastPhotoUri: Uri? = null
   private var lastPhotoPath: String? = null
@@ -70,17 +65,17 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
     initList()
     done.setOnClickListener { viewModel.performDoneAction() }
     closeIcon.setOnClickListener { viewModel.onCloseClick() }
-    viewModel.content.observe(this, {
-      if (adapter.items.isNullOrEmpty()) {
-        /**
-         * Avoid bottom sheet glitches.
-         * TODO: Use custom view or animate regular fragment instead of using the AppCompatDialogFragment with default BottomSheetBehavior
-         */
-        recyclerView.postDelayed({ showItems(it) }, 120L)
-      } else {
-        showItems(it)
-      }
-    })
+//    viewModel.content.observe(this, {
+//      if (adapter.items.isNullOrEmpty()) {
+//        /**
+//         * Avoid bottom sheet glitches.
+//         * TODO: Use custom view or animate regular fragment instead of using the AppCompatDialogFragment with default BottomSheetBehavior
+//         */
+//        recyclerView.postDelayed({ showItems(it) }, 120L)
+//      } else {
+//        showItems(it)
+//      }
+//    })
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -97,7 +92,7 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
   }
 
   private fun showItems(items: List<DiffListItem>) {
-    adapter.items = items
+//    adapter.items = items
     val selectedCount = items.count { it is GalleryMediaItem && it.selected }
     label.text = if (selectedCount > 0) {
       if (singleImage) {
@@ -173,7 +168,7 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
     with(recyclerView) {
       setHasFixedSize(true)
       (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
-      adapter = this@MediaPickerDialogFragment.adapter
+//      adapter = this@MediaPickerDialogFragment.adapter
     }
   }
 
@@ -189,25 +184,25 @@ class MediaPickerDialogFragment : BaseExpandableBottomSheet() {
     }
   }
 
-  private inner class ImagesAdapter : ListDelegationAdapter<List<DiffListItem>>() {
-    init {
-      delegatesManager.apply {
-        addDelegate(MediaItemDelegate(viewModel::onMediaClick))
-        addDelegate(CameraCaptureDelegate(::dispatchTakePictureIntent))
-      }
-    }
-
-    override fun setItems(newItems: List<DiffListItem>) {
-      if (items == null) {
-        items = newItems
-        notifyDataSetChanged()
-      } else {
-        val diffResult = DiffUtil.calculateDiff(DiffCalculator(items, newItems))
-        diffResult.dispatchUpdatesTo(this)
-        items = newItems
-      }
-    }
-  }
+//  private inner class ImagesAdapter : ListDelegationAdapter<List<DiffListItem>>() {
+//    init {
+//      delegatesManager.apply {
+//        addDelegate(MediaItemDelegate(viewModel::onMediaClick))
+//        addDelegate(CameraCaptureDelegate(::dispatchTakePictureIntent))
+//      }
+//    }
+//
+//    override fun setItems(newItems: List<DiffListItem>) {
+//      if (items == null) {
+//        items = newItems
+//        notifyDataSetChanged()
+//      } else {
+//        val diffResult = DiffUtil.calculateDiff(DiffCalculator(items, newItems))
+//        diffResult.dispatchUpdatesTo(this)
+//        items = newItems
+//      }
+//    }
+//  }
 
   companion object {
     const val REQUEST_IMAGE_CAPTURE = 3581
