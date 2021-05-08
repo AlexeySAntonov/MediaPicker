@@ -4,6 +4,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Typeface
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
@@ -19,12 +20,14 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.SL
-import com.aleksejantonov.mediapicker.base.getScreenHeight
-import com.aleksejantonov.mediapicker.base.textColor
+import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.picker.adapter.MediaItemsAdapter
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
+import com.google.android.material.button.MaterialButton
+import kotlinx.android.synthetic.main.dialog_media_picker.*
 
 class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
 
@@ -35,6 +38,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private var closeImageView: ImageView? = null
   private var titleTextView: TextView? = null
   private var mediaRecyclerView: RecyclerView? = null
+  private var doneButton: MaterialButton? = null
   private var animatorSet: AnimatorSet? = null
 
   private var onCameraClickListener: (() -> Unit)? = null
@@ -69,6 +73,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     setupCloseButton()
     setupTitle()
     setupRecyclerView()
+    setupDoneButton()
   }
 
   override fun onAttachedToWindow() {
@@ -159,6 +164,8 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
         gravity = Gravity.START or Gravity.TOP
       )
       gravity = Gravity.START or Gravity.CENTER_VERTICAL
+      setLines(1)
+      ellipsize = TextUtils.TruncateAt.END
       setText(if (singleImage) R.string.media_picker_select_images_title else R.string.media_picker_select_media_title)
       textSize = 18f
       textColor(R.color.appTextColor)
@@ -183,14 +190,74 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     mediaRecyclerView?.let { addView(it) }
   }
 
+  private fun setupDoneButton() {
+    doneButton = MaterialButton(context).apply {
+      layoutParams = LayoutHelper.getFrameParams(
+        context = context,
+        width = LayoutHelper.MATCH_PARENT,
+        height = DONE_BUTTON_DIMEN,
+        leftMargin = DONE_BUTTON_MARGIN,
+        rightMargin = DONE_BUTTON_MARGIN,
+        bottomMargin = DONE_BUTTON_MARGIN / 2,
+        gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+      )
+      insetTop = 0
+      insetBottom = 0
+      cornerRadius = dpToPx(DONE_BUTTON_DIMEN.toFloat() / 2)
+      setRippleColorResource(R.color.semiTransparent)
+      setText(R.string.done)
+      isVisible = false
+      setOnClickListener { viewModel.performDoneAction() }
+    }
+    doneButton?.let { addView(it) }
+  }
+
   private fun bindItems(items: List<DiffListItem>) {
     mediaAdapter.items = items
+    val selectedCount = items.count { it is GalleryMediaItem && it.selected }
+    titleTextView?.text = if (selectedCount > 0) {
+      if (singleImage) {
+        resources.getQuantityString(
+          R.plurals.media_picker_select_images_title_plural,
+          selectedCount,
+          selectedCount
+        )
+      } else {
+        val selectedPhotosCount = items.filter { it is GalleryMediaItem && !it.isVideo && it.selected }.size
+        when {
+          selectedPhotosCount == selectedCount -> resources.getQuantityString(
+            R.plurals.media_picker_select_images_title_plural,
+            selectedCount,
+            selectedCount
+          )
+          selectedPhotosCount != 0 -> resources.getQuantityString(
+            R.plurals.media_picker_select_media_title_plural,
+            selectedCount,
+            selectedCount
+          )
+          else -> resources.getQuantityString(
+            R.plurals.media_picker_select_video_title_plural,
+            selectedCount,
+            selectedCount
+          )
+        }
+      }
+    } else {
+      if (singleImage) {
+        context.getText(R.string.media_picker_select_images_title)
+      } else {
+        context.getText(R.string.media_picker_select_media_title)
+      }
+    }
+    doneButton?.animateVisibility(selectedCount > 0)
   }
 
   companion object {
     private const val CLOSE_IMAGE_DIMEN = 48
     private const val CLOSE_IMAGE_MARGIN = 4
     private const val TITLE_TEXT_MARGIN = 16
+    private const val DONE_BUTTON_DIMEN = 48
+    private const val DONE_BUTTON_MARGIN = 32
 
     private const val GALLERY_APPEARANCE_DURATION = 330L
     private const val GALLERY_DISAPPEARANCE_DURATION = 220L

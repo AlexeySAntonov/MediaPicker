@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     super.onCreate(savedInstanceState)
     pick.setOnClickListener {
       if (Build.VERSION.SDK_INT < 23 || Build.VERSION.SDK_INT >= 23 && permissionsGranted()) {
-        showMediaPickerView()
+        mediaPickerView ?: showMediaPickerView()
       } else {
         requestPermissions(permissions, 1212)
       }

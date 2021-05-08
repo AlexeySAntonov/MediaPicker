@@ -92,10 +92,10 @@ fun TextView.textColor(id: Int) {
     setTextColor(ContextCompat.getColor(context, id))
 }
 
-fun View.dpToPx(dp: Float): Float {
+fun View.dpToPx(dp: Float): Int {
     val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val display = wm.defaultDisplay
     val metrics = DisplayMetrics()
     display.getMetrics(metrics)
-    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics)
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics).roundToInt()
 }
