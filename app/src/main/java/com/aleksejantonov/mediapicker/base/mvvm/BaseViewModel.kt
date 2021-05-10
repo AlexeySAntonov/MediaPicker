@@ -8,4 +8,5 @@ abstract class BaseViewModel : ViewModel() {
 
   open val exceptionHandler = CoroutineExceptionHandler { _, e -> Timber.e(e) }
 
+  fun dispatchOnCleared() = onCleared()
 }

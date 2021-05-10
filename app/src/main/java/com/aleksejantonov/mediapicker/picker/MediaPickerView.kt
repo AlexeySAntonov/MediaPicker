@@ -84,6 +84,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
 
   override fun onDetachedFromWindow() {
     viewModel.content.removeObserver(contentObserver)
+    viewModel.dispatchOnCleared()
     mediaRecyclerView?.adapter = null
     animatorSet = null
     super.onDetachedFromWindow()
