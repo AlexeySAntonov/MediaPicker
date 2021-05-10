@@ -10,6 +10,7 @@ import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -166,4 +167,13 @@ fun fullScreenSize(context: Context): Point {
     val size = Point()
     display.getRealSize(size)
     return size
+}
+
+fun View.toast(text: String, long: Boolean = false, gravity: Int? = null) {
+    (context as? Activity)?.let { activity ->
+        Toast.makeText(activity, text, if (long) Toast.LENGTH_LONG else Toast.LENGTH_SHORT).apply {
+            gravity?.let { setGravity(it, 0, 0) }
+            show()
+        }
+    }
 }

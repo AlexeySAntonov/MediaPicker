@@ -52,6 +52,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   }
 
   private val contentObserver = Observer<List<DiffListItem>> { bindItems(it) }
+  private val limitObserver = Observer<Unit> { onSelectionLimitReached() }
 
   private val viewModel by lazy {
     MediaPickerViewModel(
@@ -80,9 +81,11 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     super.onAttachedToWindow()
     mediaRecyclerView?.adapter = mediaAdapter
     viewModel.content.observeForever(contentObserver)
+    viewModel.limitEvent.observeForever(limitObserver)
   }
 
   override fun onDetachedFromWindow() {
+    viewModel.limitEvent.removeObserver(limitObserver)
     viewModel.content.removeObserver(contentObserver)
     viewModel.dispatchOnCleared()
     mediaRecyclerView?.adapter = null
@@ -254,6 +257,10 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       }
     }
     doneButton?.animateVisibility(selectedCount > 0)
+  }
+
+  private fun onSelectionLimitReached() {
+    toast(resources.getString(R.string.you_have_reached_the_set_limit_of_media, limit))
   }
 
   companion object {

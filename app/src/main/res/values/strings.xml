@@ -16,4 +16,5 @@
         <item quantity="one">%1$d media selected</item>
         <item quantity="other">%1$d media selected</item>
     </plurals>
+    <string name="you_have_reached_the_set_limit_of_media">You have reached the set limit of %1$d media</string>
 </resources>
