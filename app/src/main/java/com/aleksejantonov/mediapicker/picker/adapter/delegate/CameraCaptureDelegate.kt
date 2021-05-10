@@ -16,7 +16,7 @@ class CameraCaptureDelegate(
     override fun isForViewType(item: DiffListItem, items: MutableList<DiffListItem>, position: Int) = item is CameraCaptureItem
 
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_camera_capture, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_camera, parent, false)
         return ViewHolder(view)
     }
 

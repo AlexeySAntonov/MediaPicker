@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.aleksejantonov.mediapicker.base.mvvm.BaseViewModel
 import com.aleksejantonov.mediapicker.base.mvvm.SingleLiveEvent
-import com.aleksejantonov.mediapicker.navigation.BottomSheetRouter
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.picker.business.SelectionInteractor
 import com.aleksejantonov.mediapicker.picker.data.IMediaProvider
@@ -19,7 +18,6 @@ import kotlinx.coroutines.launch
 
 class MediaPickerViewModel(
   private val mediaProvider: IMediaProvider,
-  private val bottomSheetRouter: BottomSheetRouter,
   private val singleImage: Boolean,
   private val limit: Int,
 ) : BaseViewModel() {
@@ -78,7 +76,7 @@ class MediaPickerViewModel(
   }
 
   fun onCloseClick() {
-    bottomSheetRouter.close()
+
   }
 
   private fun processSingleImage(item: GalleryMediaItem) {

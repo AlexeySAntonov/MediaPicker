@@ -28,7 +28,6 @@ import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.picker.adapter.MediaItemsAdapter
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.google.android.material.button.MaterialButton
-import kotlinx.android.synthetic.main.dialog_media_picker.*
 
 class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
 
@@ -57,7 +56,6 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private val viewModel by lazy {
     MediaPickerViewModel(
       mediaProvider = SL.mediaProvider,
-      bottomSheetRouter = SL.bottomSheetRouter,
       singleImage = singleImage,
       limit = limit
     )
