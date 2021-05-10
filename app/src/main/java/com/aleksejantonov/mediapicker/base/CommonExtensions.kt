@@ -3,6 +3,7 @@ package com.aleksejantonov.mediapicker.base
 import android.app.Activity
 import android.content.Context
 import android.graphics.Point
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.TypedValue
@@ -98,4 +99,71 @@ fun View.dpToPx(dp: Float): Int {
     val metrics = DisplayMetrics()
     display.getMetrics(metrics)
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics).roundToInt()
+}
+
+fun View.setPaddings(left: Int? = null, top: Int? = null, right: Int? = null, bottom: Int? = null) {
+    setPadding(
+        left ?: paddingLeft,
+        top ?: paddingTop,
+        right ?: paddingRight,
+        bottom ?: paddingBottom
+    )
+}
+
+fun View.statusBarHeight(): Int {
+    return (context as Activity).statusBarHeight()
+}
+
+fun Activity.statusBarHeight(): Int {
+    val rectangle = Rect()
+    val window = window
+    window.decorView.getWindowVisibleDisplayFrame(rectangle)
+    return if (rectangle.top > 0) rectangle.top else statusBarHeightFromResources()
+}
+
+fun Activity.statusBarHeightFromResources(): Int {
+    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+    if (resourceId > 0) {
+        return resources.getDimensionPixelSize(resourceId)
+    }
+    return 0
+}
+
+fun View.navBarHeight(isLandscapeMode: Boolean = false): Int {
+    return context.navBarHeight(isLandscapeMode)
+}
+
+fun Context.navBarHeight(isLandscapeMode: Boolean = false): Int {
+    if (hasSoftBottomBar(isLandscapeMode)) {
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            return resources.getDimensionPixelSize(resourceId)
+        }
+    }
+    return 0
+}
+
+fun Context.hasSoftBottomBar(isLandscapeMode: Boolean = false): Boolean {
+    val bottomBarHeight = dpToPx(16f) // 16 is bottom bar height on android 10
+    val screenSize = screenSize(this)
+    val fullSize = fullScreenSize(this)
+    return if (!isLandscapeMode) fullSize.y - screenSize.y >= bottomBarHeight
+    else fullSize.x - screenSize.x >= bottomBarHeight
+}
+
+fun screenSize(context: Context): Point {
+    val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val display = wm.defaultDisplay
+    val size = Point()
+    display.getSize(size)
+    return size
+}
+
+fun fullScreenSize(context: Context): Point {
+    // fix for cases when bottom of the screen has soft action bar that 'steals' tiny amount of parent height
+    val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val display = wm.defaultDisplay
+    val size = Point()
+    display.getRealSize(size)
+    return size
 }

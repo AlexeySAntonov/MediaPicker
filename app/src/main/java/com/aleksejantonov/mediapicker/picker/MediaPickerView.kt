@@ -69,6 +69,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     )
     translationY = screenHeight.toFloat()
     setBackgroundResource(R.color.white)
+    setPaddings(top = statusBarHeight())
     setupCloseButton()
     setupTitle()
     setupRecyclerView()
@@ -185,6 +186,8 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       layoutManager = GridLayoutManager(context, 3)
       setHasFixedSize(true)
       (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+      setPaddings(bottom = navBarHeight())
+      clipToPadding = false
     }
     mediaRecyclerView?.let { addView(it) }
   }
