@@ -3,6 +3,7 @@ package com.aleksejantonov.mediapicker.picker
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.AttributeSet
@@ -15,6 +16,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,8 +32,11 @@ import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.picker.adapter.MediaItemsAdapter
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.google.android.material.button.MaterialButton
+import java.lang.ref.WeakReference
 
-class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
+class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable, LifecycleOwner {
+
+  private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
 
   private val screenHeight by lazy { context.getScreenHeight() }
   private var singleImage: Boolean = false
@@ -41,12 +48,13 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private var doneButton: MaterialButton? = null
   private var animatorSet: AnimatorSet? = null
 
-  private var onCameraClickListener: (() -> Unit)? = null
+  private var onCameraClickListener: ((Bitmap?) -> Unit)? = null
   private var onHideAnimCompleteListener: (() -> Unit)? = null
 
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
-      onCameraClick = { onCameraClickListener?.invoke() },
+      lifeCycleOwner = WeakReference(this),
+      onCameraClick = { onCameraClickListener?.invoke(it) },
       onMediaClick = { viewModel.onMediaClick(it) }
     )
   }
@@ -75,16 +83,19 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     setupTitle()
     setupRecyclerView()
     setupDoneButton()
+    lifecycleRegistry.currentState = Lifecycle.State.CREATED
   }
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
+    lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     mediaRecyclerView?.adapter = mediaAdapter
     viewModel.content.observeForever(contentObserver)
     viewModel.limitEvent.observeForever(limitObserver)
   }
 
   override fun onDetachedFromWindow() {
+    lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
     viewModel.limitEvent.removeObserver(limitObserver)
     viewModel.content.removeObserver(contentObserver)
     viewModel.dispatchOnCleared()
@@ -132,7 +143,11 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     }
   }
 
-  fun onCameraClick(listener: () -> Unit) {
+  override fun getLifecycle(): Lifecycle {
+    return lifecycleRegistry
+  }
+
+  fun onCameraClick(listener: (Bitmap?) -> Unit) {
     this.onCameraClickListener = listener
   }
 

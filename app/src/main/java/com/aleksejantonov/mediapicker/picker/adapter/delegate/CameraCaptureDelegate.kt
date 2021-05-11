@@ -1,5 +1,6 @@
 package com.aleksejantonov.mediapicker.picker.adapter.delegate
 
+import android.graphics.Bitmap
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -16,9 +17,11 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import kotlinx.android.synthetic.main.item_camera.view.*
 import timber.log.Timber
+import java.lang.ref.WeakReference
 
 class CameraCaptureDelegate(
-  private val listener: () -> Unit
+  private val lifeCycleOwner: WeakReference<LifecycleOwner>,
+  private val listener: (Bitmap?) -> Unit
 ) : AbsListItemAdapterDelegate<CameraCaptureItem, DiffListItem, CameraCaptureDelegate.ViewHolder>() {
 
   override fun isForViewType(item: DiffListItem, items: MutableList<DiffListItem>, position: Int) = item is CameraCaptureItem
@@ -38,14 +41,15 @@ class CameraCaptureDelegate(
 
   inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
     // Used to bind the lifecycle of cameras to the lifecycle owner
     private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
+    private var previewUseCase: Preview? = null
 
     fun bind(item: CameraCaptureItem) {
       with(itemView) {
         startCameraPreview()
-        setOnClickListener { listener.invoke() }
+        setOnClickListener { listener.invoke(itemView.viewFinder.bitmap) }
       }
     }
 
@@ -56,7 +60,7 @@ class CameraCaptureDelegate(
         cameraProvider = cameraProviderFuture?.get()
 
         // Preview
-        val preview = Preview.Builder()
+        previewUseCase = Preview.Builder()
           .build()
           .also {
             it.setSurfaceProvider(itemView.viewFinder.surfaceProvider)
@@ -67,10 +71,12 @@ class CameraCaptureDelegate(
 
         try {
           // Unbind use cases before rebinding
-          cameraProvider?.unbindAll()
+          previewUseCase?.let { cameraProvider?.unbind(it) }
 
           // Bind use cases to camera
-          (itemView.context as? LifecycleOwner)?.let { cameraProvider?.bindToLifecycle(it, cameraSelector, preview) }
+          lifeCycleOwner.get()?.let { owner ->
+            previewUseCase?.let { cameraProvider?.bindToLifecycle(owner, cameraSelector, it) }
+          }
 
         } catch (e: Exception) {
           Timber.e("Use case binding failed with exception: $e")
@@ -82,7 +88,8 @@ class CameraCaptureDelegate(
     fun releaseCamera() {
       cameraProviderFuture?.cancel(true)
       cameraProviderFuture = null
-      cameraProvider?.unbindAll()
+      previewUseCase?.let { cameraProvider?.unbind(it) }
+      previewUseCase = null
       cameraProvider = null
     }
   }

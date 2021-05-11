@@ -2,12 +2,15 @@ package com.aleksejantonov.mediapicker.base
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
@@ -176,4 +179,24 @@ fun View.toast(text: String, long: Boolean = false, gravity: Int? = null) {
             show()
         }
     }
+}
+
+fun View.drawBitmap(x: Int = 0, y: Int = 0, w: Int = width, h: Int = height): Bitmap {
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    draw(canvas)
+    return Bitmap.createBitmap(bitmap, x, y, w, h)
+}
+
+fun View.setMargins(left: Int? = null, top: Int? = null, right: Int? = null, bottom: Int? = null) {
+    val marginLayoutParams = this.layoutParams as ViewGroup.MarginLayoutParams
+    marginLayoutParams.setMargins(
+        left ?: marginLayoutParams.leftMargin,
+        top ?: marginLayoutParams.topMargin,
+        right ?: marginLayoutParams.rightMargin,
+        bottom ?: marginLayoutParams.bottomMargin
+    )
+    marginLayoutParams.marginEnd = right ?: marginLayoutParams.marginEnd
+    marginLayoutParams.marginStart = left ?: marginLayoutParams.marginStart
+    this.layoutParams = marginLayoutParams
 }

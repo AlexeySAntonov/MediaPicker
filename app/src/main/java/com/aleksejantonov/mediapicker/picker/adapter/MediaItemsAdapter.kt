@@ -1,21 +1,25 @@
 package com.aleksejantonov.mediapicker.picker.adapter
 
+import android.graphics.Bitmap
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.CameraCaptureDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.MediaItemDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
+import java.lang.ref.WeakReference
 
 class MediaItemsAdapter(
-  private val onCameraClick: () -> Unit,
+  private val lifeCycleOwner: WeakReference<LifecycleOwner>,
+  private val onCameraClick: (Bitmap?) -> Unit,
   private val onMediaClick: (GalleryMediaItem) -> Unit,
 ) : AsyncListDifferDelegationAdapter<DiffListItem>(DIFF_CALLBACK) {
 
   init {
     delegatesManager.apply {
       addDelegate(MediaItemDelegate(onMediaClick))
-      addDelegate(CameraCaptureDelegate(onCameraClick))
+      addDelegate(CameraCaptureDelegate(lifeCycleOwner, onCameraClick))
     }
   }
 

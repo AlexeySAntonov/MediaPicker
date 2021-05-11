@@ -2,16 +2,20 @@ package com.aleksejantonov.mediapicker
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.aleksejantonov.mediapicker.base.drawBitmap
+import com.aleksejantonov.mediapicker.photocapture.PhotoCaptureView
 import com.aleksejantonov.mediapicker.picker.MediaPickerView
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
   private var mediaPickerView: MediaPickerView? = null
+  private var photoCaptureView: PhotoCaptureView? = null
 
   private val permissions: Array<String> = arrayOf(
     Manifest.permission.CAMERA,
@@ -32,24 +36,38 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
   override fun onPause() {
     super.onPause()
-    mediaPickerView?.let {
-      modalHost.removeView(it)
-      mediaPickerView = null
-    }
+    modalHost.removeAllViews()
+    mediaPickerView = null
+    photoCaptureView = null
   }
 
   override fun onBackPressed() {
-    mediaPickerView?.animateHide() ?: super.onBackPressed()
+    photoCaptureView?.animateHide()
+      ?: mediaPickerView?.animateHide()
+      ?: super.onBackPressed()
   }
 
   private fun showMediaPickerView() {
     mediaPickerView = MediaPickerView.newInstance(modalHost.context).apply {
       modalHost.addView(this)
-      onCameraClick { }
+      onCameraClick { showPhotoCaptureView(it) }
       onHideAnimationComplete {
         mediaPickerView?.let {
           modalHost.removeView(it)
           mediaPickerView = null
+        }
+      }
+      animateShow()
+    }
+  }
+
+  private fun showPhotoCaptureView(initialBitmap: Bitmap?) {
+    photoCaptureView = PhotoCaptureView.newInstance(modalHost.context, initialBitmap).apply {
+      modalHost.addView(this)
+      onHideAnimationComplete {
+        photoCaptureView?.let {
+          modalHost.removeView(it)
+          photoCaptureView = null
         }
       }
       animateShow()
