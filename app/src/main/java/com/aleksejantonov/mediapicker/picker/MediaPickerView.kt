@@ -167,6 +167,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       )
       scaleType = ImageView.ScaleType.CENTER
       setImageResource(R.drawable.ic_close_clear_24dp)
+      setBackgroundResource(R.drawable.selector_button_dark)
       setOnClickListener { animateHide() }
     }
     closeImageView?.let { addView(it) }

@@ -49,7 +49,7 @@ class CameraCaptureDelegate(
     fun bind(item: CameraCaptureItem) {
       with(itemView) {
         startCameraPreview()
-        setOnClickListener { listener.invoke(itemView.viewFinder.bitmap) }
+        setOnClickListener { listener.invoke(viewFinder.bitmap) }
       }
     }
 

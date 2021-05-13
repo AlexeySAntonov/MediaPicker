@@ -26,6 +26,12 @@ fun Context.getScreenHeight(): Int {
     return size.y
 }
 
+fun Context.getScreenWidth(): Int {
+    val size = Point()
+    (this as Activity).windowManager.defaultDisplay.getSize(size)
+    return size.x
+}
+
 fun Fragment.getColor(@ColorRes colorId: Int): Int = context?.let {
     ContextCompat.getColor(it, colorId)
 } ?: 0
@@ -196,7 +202,5 @@ fun View.setMargins(left: Int? = null, top: Int? = null, right: Int? = null, bot
         right ?: marginLayoutParams.rightMargin,
         bottom ?: marginLayoutParams.bottomMargin
     )
-    marginLayoutParams.marginEnd = right ?: marginLayoutParams.marginEnd
-    marginLayoutParams.marginStart = left ?: marginLayoutParams.marginStart
     this.layoutParams = marginLayoutParams
 }
