@@ -12,6 +12,7 @@
     <color name="appGreyF5">#F5F5F5</color>
     <color name="appTextColor">#212121</color>
     <color name="semiTransparent">#42000000</color>
+    <color name="semiTransparentWhite">#88FFFFFF</color>
 
     <color name="divider">@color/appGreyLight</color>
 </resources>

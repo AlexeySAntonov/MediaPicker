@@ -5,6 +5,8 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
@@ -35,11 +37,13 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
 
   private val screenHeight by lazy { context.getScreenHeight() }
   private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
+  private var safeHandler: Handler? = null
 
   private var previewView: PreviewView? = null
   private var closeImageView: ImageView? = null
   private var initialFrameImageView: ImageView? = null
   private var animatorSet: AnimatorSet? = null
+  private var focusAnimatorSet: AnimatorSet? = null
 
   // Used to bind the lifecycle of cameras to the lifecycle owner
   private var cameraProvider: ProcessCameraProvider? = null
@@ -54,7 +58,7 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
       context = context,
       width = LayoutHelper.MATCH_PARENT,
       height = LayoutHelper.MATCH_PARENT,
-      gravity = Gravity.TOP or Gravity.LEFT
+      gravity = Gravity.TOP or Gravity.START
     )
     translationY = screenHeight.toFloat()
     setBackgroundResource(R.color.appBlack)
@@ -69,13 +73,17 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
     lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+    safeHandler = Handler(Looper.getMainLooper())
     startCameraPreview()
   }
 
   override fun onDetachedFromWindow() {
+    animatorSet = null
+    focusAnimatorSet = null
+    safeHandler?.removeCallbacksAndMessages(null)
+    safeHandler = null
     lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
     releaseCamera()
-    animatorSet = null
     super.onDetachedFromWindow()
   }
 
@@ -144,7 +152,7 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
         val action = FocusMeteringAction.Builder(point).build()
 
         // Execute focus action
-        camera?.cameraControl?.startFocusAndMetering(action)
+        camera?.cameraControl?.startFocusAndMetering(action).also { onCameraFocus(event.x, event.y) }
 
         return@setOnTouchListener true
       }
@@ -214,7 +222,69 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     }, ContextCompat.getMainExecutor(context))
   }
 
+  private fun onCameraFocus(focusX: Float, focusY: Float) {
+    val innerTouchView = View(context).apply {
+      layoutParams = LayoutHelper.getFrameParams(
+        context = context,
+        width = FOCUS_VIEW_DIMEN,
+        height = FOCUS_VIEW_DIMEN,
+        gravity = Gravity.TOP or Gravity.START
+      )
+      alpha = 0.2f
+      scaleX = 0.5f
+      scaleY = 0.5f
+      val dimenPx = dpToPx(FOCUS_VIEW_DIMEN.toFloat())
+      x = focusX - dimenPx / 2
+      y = focusY - dimenPx / 2
+      setBackgroundResource(R.drawable.background_circle_white)
+    }
+    val outerTouchView = View(context).apply {
+      layoutParams = LayoutHelper.getFrameParams(
+        context = context,
+        width = FOCUS_VIEW_DIMEN,
+        height = FOCUS_VIEW_DIMEN,
+        gravity = Gravity.TOP or Gravity.START
+      )
+      scaleX = 1.5f
+      scaleY = 1.5f
+      val dimenPx = dpToPx(FOCUS_VIEW_DIMEN.toFloat())
+      x = focusX - dimenPx / 2
+      y = focusY - dimenPx / 2
+      setBackgroundResource(R.drawable.background_circle_outer_touch)
+    }
+    addView(innerTouchView)
+    addView(outerTouchView)
+
+    focusAnimatorSet?.cancel()
+    focusAnimatorSet = AnimatorSet().apply {
+      playTogether(
+        ObjectAnimator.ofFloat(innerTouchView, View.ALPHA, 0.2f, 0.8f)
+          .setDuration(FOCUS_TOUCH_DURATION),
+        ObjectAnimator.ofFloat(innerTouchView, View.SCALE_X, 0.5f, 1f)
+          .setDuration(FOCUS_TOUCH_DURATION),
+        ObjectAnimator.ofFloat(innerTouchView, View.SCALE_Y, 0.5f, 1f)
+          .setDuration(FOCUS_TOUCH_DURATION),
+        ObjectAnimator.ofFloat(outerTouchView, View.SCALE_X, 1.5f, 1f)
+          .setDuration(FOCUS_TOUCH_DURATION),
+        ObjectAnimator.ofFloat(outerTouchView, View.SCALE_Y, 1.5f, 1f)
+          .setDuration(FOCUS_TOUCH_DURATION),
+      )
+      interpolator = AccelerateDecelerateInterpolator()
+      doOnEnd {
+        if (it == focusAnimatorSet) {
+          focusAnimatorSet = null
+          safeHandler?.postDelayed({
+            this@PhotoCaptureView.removeView(innerTouchView)
+            this@PhotoCaptureView.removeView(outerTouchView)
+          }, 150L)
+        }
+      }
+      start()
+    }
+  }
+
   private fun releaseCamera() {
+    camera?.cameraControl?.cancelFocusAndMetering()
     camera = null
     cameraProviderFuture?.cancel(true)
     cameraProviderFuture = null
@@ -226,9 +296,11 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
   companion object {
     private const val CLOSE_IMAGE_DIMEN = 48
     private const val CLOSE_IMAGE_MARGIN = 4
+    private const val FOCUS_VIEW_DIMEN = 48
 
     private const val CAPTURE_APPEARANCE_DURATION = 330L
     private const val CAPTURE_DISAPPEARANCE_DURATION = 220L
+    private const val FOCUS_TOUCH_DURATION = 350L
 
     fun newInstance(parentContext: Context, initialBitmap: Bitmap?) = PhotoCaptureView(parentContext).apply {
       initialFrameImageView?.setImageBitmap(initialBitmap)

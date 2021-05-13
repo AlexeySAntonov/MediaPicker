@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
   private fun showMediaPickerView() {
     mediaPickerView = MediaPickerView.newInstance(modalHost.context).apply {
       modalHost.addView(this)
-      onCameraClick { showPhotoCaptureView(it) }
+      onCameraClick { photoCaptureView ?: showPhotoCaptureView(it) }
       onHideAnimationComplete {
         mediaPickerView?.let {
           modalHost.removeView(it)
