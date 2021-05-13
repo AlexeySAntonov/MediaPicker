@@ -286,7 +286,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     private const val DONE_BUTTON_DIMEN = 48
     private const val DONE_BUTTON_MARGIN = 32
 
-    private const val GALLERY_APPEARANCE_DURATION = 330L
+    const val GALLERY_APPEARANCE_DURATION = 330L
     private const val GALLERY_DISAPPEARANCE_DURATION = 220L
 
     fun newInstance(

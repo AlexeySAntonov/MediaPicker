@@ -1,6 +1,7 @@
 package com.aleksejantonov.mediapicker.picker.adapter.delegate
 
 import android.graphics.Bitmap
+import android.os.Handler
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.CameraCaptureItem
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
+import com.aleksejantonov.mediapicker.picker.MediaPickerView.Companion.GALLERY_APPEARANCE_DURATION
 import com.google.common.util.concurrent.ListenableFuture
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import kotlinx.android.synthetic.main.item_camera.view.*
@@ -41,6 +43,9 @@ class CameraCaptureDelegate(
 
   inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
+    private val handler = Handler()
+    private var handlerCallback: Runnable? = null
+
     // Used to bind the lifecycle of cameras to the lifecycle owner
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
@@ -54,38 +59,43 @@ class CameraCaptureDelegate(
     }
 
     private fun startCameraPreview() {
-      cameraProviderFuture = ProcessCameraProvider.getInstance(itemView.context)
+      handlerCallback?.let { handler.removeCallbacks(it) }
+      handlerCallback = Runnable {
+        cameraProviderFuture = ProcessCameraProvider.getInstance(itemView.context)
 
-      cameraProviderFuture?.addListener({
-        cameraProvider = cameraProviderFuture?.get()
+        cameraProviderFuture?.addListener({
+          cameraProvider = cameraProviderFuture?.get()
 
-        // Preview
-        previewUseCase = Preview.Builder()
-          .build()
-          .also {
-            it.setSurfaceProvider(itemView.viewFinder.surfaceProvider)
+          // Preview
+          previewUseCase = Preview.Builder()
+            .build()
+            .also {
+              it.setSurfaceProvider(itemView.viewFinder.surfaceProvider)
+            }
+
+          // Select back camera as a default
+          val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+          try {
+            // Unbind use cases before rebinding
+            previewUseCase?.let { cameraProvider?.unbind(it) }
+
+            // Bind use cases to camera
+            lifeCycleOwner.get()?.let { owner ->
+              previewUseCase?.let { cameraProvider?.bindToLifecycle(owner, cameraSelector, it) }
+            }
+
+          } catch (e: Exception) {
+            Timber.e("Use case binding failed with exception: $e")
           }
 
-        // Select back camera as a default
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-        try {
-          // Unbind use cases before rebinding
-          previewUseCase?.let { cameraProvider?.unbind(it) }
-
-          // Bind use cases to camera
-          lifeCycleOwner.get()?.let { owner ->
-            previewUseCase?.let { cameraProvider?.bindToLifecycle(owner, cameraSelector, it) }
-          }
-
-        } catch (e: Exception) {
-          Timber.e("Use case binding failed with exception: $e")
-        }
-
-      }, ContextCompat.getMainExecutor(itemView.context))
+        }, ContextCompat.getMainExecutor(itemView.context))
+      }.also { handler.postDelayed(it, GALLERY_APPEARANCE_DURATION) }
     }
 
     fun releaseCamera() {
+      handlerCallback?.let { handler.removeCallbacks(it) }
+      handlerCallback = null
       cameraProviderFuture?.cancel(true)
       cameraProviderFuture = null
       previewUseCase?.let { cameraProvider?.unbind(it) }
