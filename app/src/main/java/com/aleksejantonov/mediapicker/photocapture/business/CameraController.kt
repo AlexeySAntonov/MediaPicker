@@ -56,6 +56,10 @@ class CameraController(
     previewUseCase?.setSurfaceProvider(surfaceProvider)
   }
 
+  override fun clearSurfaceProvider() {
+    previewUseCase?.setSurfaceProvider(null)
+  }
+
   override fun startFocusAndMetering(action: FocusMeteringAction) {
     camera?.cameraControl?.startFocusAndMetering(action)
   }

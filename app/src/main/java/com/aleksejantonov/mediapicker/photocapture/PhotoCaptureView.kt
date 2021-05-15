@@ -73,6 +73,7 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     safeHandler?.removeCallbacksAndMessages(null)
     safeHandler = null
     cameraController.cancelFocusAndMetering()
+    cameraController.clearSurfaceProvider()
     previewView?.previewStreamState?.removeObserver(previewStreamStateObserver)
     super.onDetachedFromWindow()
   }

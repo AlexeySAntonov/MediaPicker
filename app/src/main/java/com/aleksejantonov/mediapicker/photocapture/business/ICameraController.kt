@@ -8,6 +8,7 @@ import java.lang.ref.WeakReference
 interface ICameraController {
   fun initCameraProvider(lifeCycleOwner: WeakReference<LifecycleOwner>, initialSurfaceProvider: Preview.SurfaceProvider)
   fun setSurfaceProvider(surfaceProvider: Preview.SurfaceProvider)
+  fun clearSurfaceProvider()
   fun startFocusAndMetering(action: FocusMeteringAction)
   fun cancelFocusAndMetering()
   fun releaseCameraProvider()
