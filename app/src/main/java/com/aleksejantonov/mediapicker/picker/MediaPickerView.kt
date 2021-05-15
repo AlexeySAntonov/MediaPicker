@@ -30,6 +30,7 @@ import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.picker.adapter.MediaItemsAdapter
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.CameraCaptureDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.google.android.material.button.MaterialButton
 import java.lang.ref.WeakReference
@@ -37,6 +38,7 @@ import java.lang.ref.WeakReference
 class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable, LifecycleOwner {
 
   private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
+  private val cameraController by lazy { SL.cameraController }
 
   private val screenHeight by lazy { context.getScreenHeight() }
   private var singleImage: Boolean = false
@@ -54,7 +56,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
       lifeCycleOwner = WeakReference(this),
-      cameraController = SL.cameraController,
+      cameraController = cameraController,
       onCameraClick = { bitmap ->  onCameraClickListener?.invoke(bitmap) },
       onMediaClick = { viewModel.onMediaClick(it) },
     )
@@ -154,6 +156,10 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
 
   fun onHideAnimationComplete(listener: () -> Unit) {
     this.onHideAnimCompleteListener = listener
+  }
+
+  fun onFocus() {
+    (mediaRecyclerView?.findViewHolderForAdapterPosition(0) as? CameraCaptureDelegate.ViewHolder)?.onParentFocus()
   }
 
   private fun setupCloseButton() {

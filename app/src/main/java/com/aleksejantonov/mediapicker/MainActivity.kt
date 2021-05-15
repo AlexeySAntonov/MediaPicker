@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         photoCaptureView?.let {
           modalHost.removeView(it)
           photoCaptureView = null
+          mediaPickerView?.onFocus()
         }
       }
       animateShow()

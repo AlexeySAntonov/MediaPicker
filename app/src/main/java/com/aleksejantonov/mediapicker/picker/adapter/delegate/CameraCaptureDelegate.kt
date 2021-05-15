@@ -54,6 +54,10 @@ class CameraCaptureDelegate(
       }
     }
 
+    fun onParentFocus() {
+      cameraController.setSurfaceProvider(itemView.viewFinder.surfaceProvider)
+    }
+
     private fun startCameraPreview() {
       handlerCallback?.let { handler.removeCallbacks(it) }
       handlerCallback = Runnable { cameraController.initCameraProvider(lifeCycleOwner, itemView.viewFinder.surfaceProvider) }

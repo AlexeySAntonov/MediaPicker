@@ -71,12 +71,12 @@ class CameraController(
   override fun releaseCameraProvider() {
     cameraProviderFuture?.cancel(true)
     cameraProviderFuture = null
+    camera?.cameraControl?.cancelFocusAndMetering()
+    camera = null
     previewUseCase?.setSurfaceProvider(null)
     previewUseCase = null
     cameraProvider?.unbindAll()
     cameraProvider = null
-    camera?.cameraControl?.cancelFocusAndMetering()
-    camera = null
   }
 
 }
