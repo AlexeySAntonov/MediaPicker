@@ -23,6 +23,10 @@ class CameraController(
   private var camera: Camera? = null
 
   override fun initCameraProvider(lifeCycleOwner: WeakReference<LifecycleOwner>, initialSurfaceProvider: Preview.SurfaceProvider) {
+    if (cameraProvider != null && previewUseCase != null) {
+      setSurfaceProvider(initialSurfaceProvider)
+      return
+    }
     releaseCameraProvider()
     cameraProviderFuture = ProcessCameraProvider.getInstance(context)
     cameraProviderFuture?.addListener(

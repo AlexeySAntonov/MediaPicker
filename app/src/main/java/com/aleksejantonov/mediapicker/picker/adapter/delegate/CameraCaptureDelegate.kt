@@ -67,7 +67,6 @@ class CameraCaptureDelegate(
     fun releaseCamera() {
       handlerCallback?.let { handler.removeCallbacks(it) }
       handlerCallback = null
-      cameraController.releaseCameraProvider()
     }
   }
 }

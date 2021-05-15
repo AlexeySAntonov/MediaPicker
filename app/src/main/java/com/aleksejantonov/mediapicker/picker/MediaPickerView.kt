@@ -104,6 +104,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     viewModel.dispatchOnCleared()
     mediaRecyclerView?.adapter = null
     animatorSet = null
+    cameraController.releaseCameraProvider()
     super.onDetachedFromWindow()
   }
 
