@@ -6,23 +6,21 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.CameraCaptureItem
 import com.aleksejantonov.mediapicker.R
+import com.aleksejantonov.mediapicker.base.hideAndShowWithDelay
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
+import com.aleksejantonov.mediapicker.photocapture.PhotoCaptureView.Companion.CAPTURE_APPEARANCE_DURATION
+import com.aleksejantonov.mediapicker.photocapture.business.ICameraController
 import com.aleksejantonov.mediapicker.picker.MediaPickerView.Companion.GALLERY_APPEARANCE_DURATION
-import com.google.common.util.concurrent.ListenableFuture
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import kotlinx.android.synthetic.main.item_camera.view.*
-import timber.log.Timber
 import java.lang.ref.WeakReference
 
 class CameraCaptureDelegate(
   private val lifeCycleOwner: WeakReference<LifecycleOwner>,
+  private val cameraController: ICameraController,
   private val listener: (Bitmap?) -> Unit
 ) : AbsListItemAdapterDelegate<CameraCaptureItem, DiffListItem, CameraCaptureDelegate.ViewHolder>() {
 
@@ -34,7 +32,7 @@ class CameraCaptureDelegate(
   }
 
   override fun onBindViewHolder(item: CameraCaptureItem, viewHolder: ViewHolder, payloads: MutableList<Any>) {
-    viewHolder.bind(item)
+    viewHolder.bind()
   }
 
   override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
@@ -46,61 +44,26 @@ class CameraCaptureDelegate(
     private val handler = Handler()
     private var handlerCallback: Runnable? = null
 
-    // Used to bind the lifecycle of cameras to the lifecycle owner
-    private var cameraProvider: ProcessCameraProvider? = null
-    private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
-    private var previewUseCase: Preview? = null
-
-    fun bind(item: CameraCaptureItem) {
+    fun bind() {
       with(itemView) {
         startCameraPreview()
-        setOnClickListener { listener.invoke(viewFinder.bitmap) }
+        setOnClickListener {
+          viewFinder.hideAndShowWithDelay(CAPTURE_APPEARANCE_DURATION * 2)
+          listener.invoke(viewFinder.bitmap)
+        }
       }
     }
 
     private fun startCameraPreview() {
       handlerCallback?.let { handler.removeCallbacks(it) }
-      handlerCallback = Runnable {
-        cameraProviderFuture = ProcessCameraProvider.getInstance(itemView.context)
-
-        cameraProviderFuture?.addListener({
-          cameraProvider = cameraProviderFuture?.get()
-
-          // Preview
-          previewUseCase = Preview.Builder()
-            .build()
-            .also {
-              it.setSurfaceProvider(itemView.viewFinder.surfaceProvider)
-            }
-
-          // Select back camera as a default
-          val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-          try {
-            // Unbind use cases before rebinding
-            previewUseCase?.let { cameraProvider?.unbind(it) }
-
-            // Bind use cases to camera
-            lifeCycleOwner.get()?.let { owner ->
-              previewUseCase?.let { cameraProvider?.bindToLifecycle(owner, cameraSelector, it) }
-            }
-
-          } catch (e: Exception) {
-            Timber.e("Use case binding failed with exception: $e")
-          }
-
-        }, ContextCompat.getMainExecutor(itemView.context))
-      }.also { handler.postDelayed(it, GALLERY_APPEARANCE_DURATION) }
+      handlerCallback = Runnable { cameraController.initCameraProvider(lifeCycleOwner, itemView.viewFinder.surfaceProvider) }
+        .also { handler.postDelayed(it, GALLERY_APPEARANCE_DURATION) }
     }
 
     fun releaseCamera() {
       handlerCallback?.let { handler.removeCallbacks(it) }
       handlerCallback = null
-      cameraProviderFuture?.cancel(true)
-      cameraProviderFuture = null
-      previewUseCase?.let { cameraProvider?.unbind(it) }
-      previewUseCase = null
-      cameraProvider = null
+      cameraController.releaseCameraProvider()
     }
   }
 }

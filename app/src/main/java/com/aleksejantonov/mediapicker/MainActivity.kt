@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.aleksejantonov.mediapicker.base.drawBitmap
 import com.aleksejantonov.mediapicker.photocapture.PhotoCaptureView
 import com.aleksejantonov.mediapicker.picker.MediaPickerView
 import kotlinx.android.synthetic.main.activity_main.*
@@ -50,7 +49,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
   private fun showMediaPickerView() {
     mediaPickerView = MediaPickerView.newInstance(modalHost.context).apply {
       modalHost.addView(this)
-      onCameraClick { photoCaptureView ?: showPhotoCaptureView(it) }
+      onCameraClick { bitmap ->  photoCaptureView ?: showPhotoCaptureView(bitmap) }
       onHideAnimationComplete {
         mediaPickerView?.let {
           modalHost.removeView(it)

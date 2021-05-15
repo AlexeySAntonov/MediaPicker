@@ -16,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import java.util.*
 import kotlin.math.roundToInt
@@ -203,4 +204,12 @@ fun View.setMargins(left: Int? = null, top: Int? = null, right: Int? = null, bot
         bottom ?: marginLayoutParams.bottomMargin
     )
     this.layoutParams = marginLayoutParams
+}
+
+fun View.hideAndShowWithDelay(delay: Long) {
+    animate()
+        .setDuration(delay)
+        .withStartAction { isVisible = false }
+        .withEndAction { isVisible = true }
+        .start()
 }

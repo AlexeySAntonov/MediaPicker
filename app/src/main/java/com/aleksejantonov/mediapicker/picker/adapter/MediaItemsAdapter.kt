@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
+import com.aleksejantonov.mediapicker.photocapture.business.ICameraController
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.CameraCaptureDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.MediaItemDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
@@ -12,6 +13,7 @@ import java.lang.ref.WeakReference
 
 class MediaItemsAdapter(
   private val lifeCycleOwner: WeakReference<LifecycleOwner>,
+  private val cameraController: ICameraController,
   private val onCameraClick: (Bitmap?) -> Unit,
   private val onMediaClick: (GalleryMediaItem) -> Unit,
 ) : AsyncListDifferDelegationAdapter<DiffListItem>(DIFF_CALLBACK) {
@@ -19,7 +21,7 @@ class MediaItemsAdapter(
   init {
     delegatesManager.apply {
       addDelegate(MediaItemDelegate(onMediaClick))
-      addDelegate(CameraCaptureDelegate(lifeCycleOwner, onCameraClick))
+      addDelegate(CameraCaptureDelegate(lifeCycleOwner, cameraController, onCameraClick))
     }
   }
 

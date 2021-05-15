@@ -54,8 +54,9 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
       lifeCycleOwner = WeakReference(this),
-      onCameraClick = { onCameraClickListener?.invoke(it) },
-      onMediaClick = { viewModel.onMediaClick(it) }
+      cameraController = SL.cameraController,
+      onCameraClick = { bitmap ->  onCameraClickListener?.invoke(bitmap) },
+      onMediaClick = { viewModel.onMediaClick(it) },
     )
   }
 

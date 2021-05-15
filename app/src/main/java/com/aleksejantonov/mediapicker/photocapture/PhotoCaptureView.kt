@@ -14,30 +14,23 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.animation.doOnEnd
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
+import androidx.core.animation.doOnStart
+import androidx.lifecycle.Observer
 import com.aleksejantonov.mediapicker.R
+import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
-import com.google.common.util.concurrent.ListenableFuture
-import timber.log.Timber
 
 
-class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable, LifecycleOwner {
+class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
 
   private val screenHeight by lazy { context.getScreenHeight() }
-  private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
   private var safeHandler: Handler? = null
+  private val cameraController by lazy { SL.cameraController }
 
   private var previewView: PreviewView? = null
   private var closeImageView: ImageView? = null
@@ -45,13 +38,8 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
   private var animatorSet: AnimatorSet? = null
   private var focusAnimatorSet: AnimatorSet? = null
 
-  // Used to bind the lifecycle of cameras to the lifecycle owner
-  private var cameraProvider: ProcessCameraProvider? = null
-  private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
-  private var camera: Camera? = null
-  private var previewUseCase: Preview? = null
-
   private var onHideAnimCompleteListener: (() -> Unit)? = null
+  private val previewStreamStateObserver = Observer<PreviewView.StreamState> { onPreviewState(it) }
 
   init {
     layoutParams = LayoutHelper.getFrameParams(
@@ -67,14 +55,16 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     setupPreviewView()
     setupInitialFrameImageView()
     setupCloseButton()
-    lifecycleRegistry.currentState = Lifecycle.State.CREATED
+  }
+
+  private fun doAfterInit(initialBitmap: Bitmap?) {
+    initialFrameImageView?.setImageBitmap(initialBitmap)
+    previewView?.let { cameraController.setSurfaceProvider(it.surfaceProvider) }
   }
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     safeHandler = Handler(Looper.getMainLooper())
-    startCameraPreview()
   }
 
   override fun onDetachedFromWindow() {
@@ -82,28 +72,32 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     focusAnimatorSet = null
     safeHandler?.removeCallbacksAndMessages(null)
     safeHandler = null
-    lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
-    releaseCamera()
+    cameraController.cancelFocusAndMetering()
+    previewView?.previewStreamState?.removeObserver(previewStreamStateObserver)
     super.onDetachedFromWindow()
   }
 
   override fun animateShow() {
-    animatorSet?.cancel()
-    animatorSet = AnimatorSet().apply {
-      playTogether(
-        ObjectAnimator.ofFloat(this@PhotoCaptureView, View.TRANSLATION_Y, screenHeight.toFloat(), 0f)
-          .setDuration(CAPTURE_APPEARANCE_DURATION),
-        ObjectAnimator.ofFloat(requireNotNull(closeImageView), View.ALPHA, 0f, 1f)
-          .setDuration(CAPTURE_APPEARANCE_DURATION),
-      )
-      interpolator = AccelerateDecelerateInterpolator()
-      doOnEnd {
-        if (it == animatorSet) {
-          animatorSet = null
-          initialFrameImageView?.let { imageView -> this@PhotoCaptureView.removeView(imageView) }
-        }
+    // Animate only when preview is ready
+    previewView?.previewStreamState?.observeForever(previewStreamStateObserver)
+  }
+
+  private fun onPreviewState(state: PreviewView.StreamState) {
+    if (state == PreviewView.StreamState.STREAMING) {
+      previewView?.previewStreamState?.removeObserver(previewStreamStateObserver)
+      animatorSet?.cancel()
+      animatorSet = AnimatorSet().apply {
+        playTogether(
+          ObjectAnimator.ofFloat(this@PhotoCaptureView, View.TRANSLATION_Y, screenHeight.toFloat(), 0f)
+            .setDuration(CAPTURE_APPEARANCE_DURATION),
+          ObjectAnimator.ofFloat(requireNotNull(closeImageView), View.ALPHA, 0f, 1f)
+            .setDuration(CAPTURE_APPEARANCE_DURATION),
+        )
+        interpolator = AccelerateDecelerateInterpolator()
+        doOnStart { initialFrameImageView?.let { imageView -> this@PhotoCaptureView.removeView(imageView) } }
+        doOnEnd { if (it == animatorSet) animatorSet = null }
+        start()
       }
-      start()
     }
   }
 
@@ -127,10 +121,6 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     }
   }
 
-  override fun getLifecycle(): Lifecycle {
-    return lifecycleRegistry
-  }
-
   fun onHideAnimationComplete(listener: () -> Unit) {
     this.onHideAnimCompleteListener = listener
   }
@@ -152,7 +142,7 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
         val action = FocusMeteringAction.Builder(point).build()
 
         // Execute focus action
-        camera?.cameraControl?.startFocusAndMetering(action).also { onCameraFocus(event.x, event.y) }
+        cameraController.startFocusAndMetering(action).also { onCameraFocus(event.x, event.y) }
 
         return@setOnTouchListener true
       }
@@ -190,36 +180,6 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
       scaleType = ImageView.ScaleType.CENTER_CROP
     }
     initialFrameImageView?.let { addView(it) }
-  }
-
-  private fun startCameraPreview() {
-    cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-
-    cameraProviderFuture?.addListener({
-      cameraProvider = cameraProviderFuture?.get()
-
-      // Preview
-      previewUseCase = Preview.Builder()
-        .build()
-        .also {
-          it.setSurfaceProvider(previewView?.surfaceProvider)
-        }
-
-      // Select back camera as a default
-      val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-      try {
-        // Unbind use cases before rebinding
-        previewUseCase?.let { cameraProvider?.unbind(it) }
-
-        // Bind use cases to camera
-        previewUseCase?.let { camera = cameraProvider?.bindToLifecycle(this, cameraSelector, it) }
-
-      } catch (e: Exception) {
-        Timber.e("Use case binding failed with exception: $e")
-      }
-
-    }, ContextCompat.getMainExecutor(context))
   }
 
   private fun onCameraFocus(focusX: Float, focusY: Float) {
@@ -283,27 +243,17 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     }
   }
 
-  private fun releaseCamera() {
-    camera?.cameraControl?.cancelFocusAndMetering()
-    camera = null
-    cameraProviderFuture?.cancel(true)
-    cameraProviderFuture = null
-    previewUseCase?.let { cameraProvider?.unbind(it) }
-    previewUseCase = null
-    cameraProvider = null
-  }
-
   companion object {
     private const val CLOSE_IMAGE_DIMEN = 48
     private const val CLOSE_IMAGE_MARGIN = 4
     private const val FOCUS_VIEW_DIMEN = 48
 
-    private const val CAPTURE_APPEARANCE_DURATION = 330L
+    const val CAPTURE_APPEARANCE_DURATION = 330L
     private const val CAPTURE_DISAPPEARANCE_DURATION = 220L
     private const val FOCUS_TOUCH_DURATION = 350L
 
     fun newInstance(parentContext: Context, initialBitmap: Bitmap?) = PhotoCaptureView(parentContext).apply {
-      initialFrameImageView?.setImageBitmap(initialBitmap)
+      doAfterInit(initialBitmap)
     }
   }
 }
