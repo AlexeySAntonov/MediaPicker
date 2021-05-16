@@ -29,8 +29,8 @@ import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
+import com.aleksejantonov.mediapicker.cameraview.CameraView
 import com.aleksejantonov.mediapicker.picker.adapter.MediaItemsAdapter
-import com.aleksejantonov.mediapicker.picker.adapter.delegate.CameraCaptureDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.google.android.material.button.MaterialButton
 import java.lang.ref.WeakReference
@@ -40,14 +40,17 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
   private val cameraController by lazy { SL.initAndGetCameraController() }
 
+  private val screenWidth by lazy { context.getScreenWidth() }
   private val screenHeight by lazy { context.getScreenHeight() }
   private var singleImage: Boolean = false
   private var limit: Int = 24
 
+  private var mediaRecyclerView: RecyclerView? = null
+  private var cameraView: CameraView? = null
+  private var doneButton: MaterialButton? = null
+  private var fakeToolbarOverlay: View? = null
   private var closeImageView: ImageView? = null
   private var titleTextView: TextView? = null
-  private var mediaRecyclerView: RecyclerView? = null
-  private var doneButton: MaterialButton? = null
   private var animatorSet: AnimatorSet? = null
 
   private var onCameraClickListener: ((Bitmap?, Float, Float, Int) -> Unit)? = null
@@ -55,11 +58,15 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
 
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
-      lifeCycleOwner = WeakReference(this),
-      cameraController = cameraController,
-      onCameraClick = { bitmap, x, y, width ->  onCameraClickListener?.invoke(bitmap, x, y, width) },
       onMediaClick = { viewModel.onMediaClick(it) },
     )
+  }
+
+  private val scrollListener = object : RecyclerView.OnScrollListener() {
+    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+      // OMG 😂 Even changing cameraX surfaces so expensive and lagging so it's easier to mimicking cell behaviour
+      cameraView?.translationY = (cameraView?.translationY ?: 0f) - dy
+    }
   }
 
   private val contentObserver = Observer<List<DiffListItem>> { bindItems(it) }
@@ -81,11 +88,12 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     )
     translationY = screenHeight.toFloat()
     setBackgroundResource(R.color.white)
-    setPaddings(top = statusBarHeight())
-    setupCloseButton()
-    setupTitle()
     setupRecyclerView()
     setupDoneButton()
+    setupCameraView()
+    setupFakeToolbarOverlay()
+    setupCloseButton()
+    setupTitle()
     lifecycleRegistry.currentState = Lifecycle.State.CREATED
   }
 
@@ -93,6 +101,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     super.onAttachedToWindow()
     lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     mediaRecyclerView?.adapter = mediaAdapter
+    mediaRecyclerView?.addOnScrollListener(scrollListener)
     viewModel.content.observeForever(contentObserver)
     viewModel.limitEvent.observeForever(limitObserver)
   }
@@ -103,6 +112,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     viewModel.content.removeObserver(contentObserver)
     viewModel.dispatchOnCleared()
     mediaRecyclerView?.adapter = null
+    mediaRecyclerView?.removeOnScrollListener(scrollListener)
     animatorSet = null
     cameraController.releaseCameraProvider()
     super.onDetachedFromWindow()
@@ -152,15 +162,24 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   }
 
   fun onCameraClick(listener: (Bitmap?, Float, Float, Int) -> Unit) {
-    this.onCameraClickListener = listener
+//    this.onCameraClickListener = listener
   }
 
   fun onHideAnimationComplete(listener: () -> Unit) {
     this.onHideAnimCompleteListener = listener
   }
 
-  fun onFocus() {
-    (mediaRecyclerView?.findViewHolderForAdapterPosition(0) as? CameraCaptureDelegate.ViewHolder)?.onParentFocus()
+  private fun setupFakeToolbarOverlay() {
+    fakeToolbarOverlay = View(context).apply {
+      layoutParams = LayoutHelper.getFrameParams(
+        context = context,
+        width = LayoutHelper.MATCH_PARENT,
+        rawHeightPx = statusBarHeight() + dpToPx(FAKE_TOOLBAR_HEIGHT.toFloat()),
+        gravity = Gravity.START or Gravity.TOP
+      )
+      setBackgroundResource(R.color.white)
+    }
+    fakeToolbarOverlay?.let { addView(it) }
   }
 
   private fun setupCloseButton() {
@@ -169,10 +188,10 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
         context = context,
         width = CLOSE_IMAGE_DIMEN,
         height = CLOSE_IMAGE_DIMEN,
-        topMargin = CLOSE_IMAGE_MARGIN,
         leftMargin = CLOSE_IMAGE_MARGIN,
         gravity = Gravity.START or Gravity.TOP
       )
+      setMargins(top = statusBarHeight() + dpToPx(CLOSE_IMAGE_MARGIN.toFloat()))
       scaleType = ImageView.ScaleType.CENTER
       setImageResource(R.drawable.ic_close_clear_24dp)
       setBackgroundResource(R.drawable.selector_button_dark)
@@ -186,11 +205,12 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       layoutParams = LayoutHelper.getFrameParams(
         context = context,
         width = LayoutHelper.MATCH_PARENT,
-        height = CLOSE_IMAGE_DIMEN + CLOSE_IMAGE_MARGIN * 2,
-        leftMargin = CLOSE_IMAGE_DIMEN + CLOSE_IMAGE_MARGIN * 2,
+        height = FAKE_TOOLBAR_HEIGHT,
+        leftMargin = FAKE_TOOLBAR_HEIGHT,
         rightMargin = TITLE_TEXT_MARGIN,
         gravity = Gravity.START or Gravity.TOP
       )
+      setMargins(top = statusBarHeight())
       gravity = Gravity.START or Gravity.CENTER_VERTICAL
       setLines(1)
       ellipsize = TextUtils.TruncateAt.END
@@ -208,9 +228,9 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
         context = context,
         width = LayoutHelper.MATCH_PARENT,
         height = LayoutHelper.MATCH_PARENT,
-        topMargin = CLOSE_IMAGE_DIMEN + CLOSE_IMAGE_MARGIN * 2,
         gravity = Gravity.TOP
       )
+      setMargins(top = statusBarHeight() + dpToPx(FAKE_TOOLBAR_HEIGHT.toFloat()))
       layoutManager = GridLayoutManager(context, 3)
       setHasFixedSize(true)
       (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
@@ -241,6 +261,12 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       setOnClickListener { viewModel.performDoneAction() }
     }
     doneButton?.let { addView(it) }
+  }
+
+  private fun setupCameraView() {
+    cameraView = CameraView.newInstance(context)
+    cameraView?.let { addView(it) }
+    cameraView?.getSurfaceProvider()?.let { cameraController.initCameraProvider(WeakReference(this), it) }
   }
 
   private fun bindItems(items: List<DiffListItem>) {
@@ -290,6 +316,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   companion object {
     private const val CLOSE_IMAGE_DIMEN = 48
     private const val CLOSE_IMAGE_MARGIN = 4
+    private const val FAKE_TOOLBAR_HEIGHT = CLOSE_IMAGE_DIMEN + CLOSE_IMAGE_MARGIN * 2
     private const val TITLE_TEXT_MARGIN = 16
     private const val DONE_BUTTON_DIMEN = 48
     private const val DONE_BUTTON_MARGIN = 32

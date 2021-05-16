@@ -10,7 +10,7 @@ import com.aleksejantonov.mediapicker.base.mvvm.SingleLiveEvent
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.picker.business.SelectionInteractor
 import com.aleksejantonov.mediapicker.picker.data.IMediaProvider
-import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.CameraCaptureItem
+import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.CameraMockItem
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -47,7 +47,7 @@ class MediaPickerViewModel(
               orderNumber = selected.indexOfFirst { item -> item.id == it.uniqueId } + 1,
             )
           }
-      }.collect { _content.postValue(listOf(CameraCaptureItem()) + it) }
+      }.collect { _content.postValue(listOf(CameraMockItem()) + it) }
     }
   }
 

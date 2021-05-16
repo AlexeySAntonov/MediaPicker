@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.photocapture.business
+package com.aleksejantonov.mediapicker.cameraview.business
 
 import android.content.Context
 import androidx.camera.core.Camera

@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.photocapture
+package com.aleksejantonov.mediapicker.cameraview
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
@@ -15,6 +15,7 @@ import android.view.animation.AccelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.camera.core.FocusMeteringAction
+import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
@@ -30,18 +31,18 @@ import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 
 
-class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
+class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
 
-  private var initialDimen: Int = 0
-  private var initialX: Float = 0.0f
-  private var initialY: Float = 0.0f
+  private val screenWidth by lazy { context.getScreenWidth() }
+  private val initialDimen by lazy { (screenWidth - dpToPx(6f)) / 3 }
   private val initialTopMargin by lazy { statusBarHeight() + dpToPx(FAKE_TOOLBAR_HEIGHT.toFloat()) }
+  private val initialTranslation by lazy { dpToPx(1f).toFloat() }
   private var safeHandler: Handler? = null
   private val cameraController by lazy { SL.initAndGetCameraController() }
 
   private var previewView: PreviewView? = null
   private var closeImageView: ImageView? = null
-  private var initialFrameImageView: ImageView? = null
+  private var overlayImageView: ImageView? = null
   private var focusAnimatorSet: AnimatorSet? = null
 
   private var onHideAnimStartedListener: (() -> Unit)? = null
@@ -49,35 +50,22 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
   private val previewStreamStateObserver = Observer<PreviewView.StreamState> { onPreviewState(it) }
 
   init {
+    layoutParams = LayoutHelper.getFrameParams(
+      context = context,
+      rawWidthPx = initialDimen,
+      rawHeightPx = initialDimen,
+      gravity = Gravity.TOP or Gravity.START
+    )
+    setMargins(top = initialTopMargin)
+    translationX = initialTranslation
+    translationY = initialTranslation
     setBackgroundResource(R.color.appBlack)
     isClickable = true
     isFocusable = true
     setupPreviewView()
-    setupInitialFrameImageView()
     setupCloseButton()
-  }
-
-  private fun doAfterInit(
-    initialBitmap: Bitmap?,
-    initialX: Float,
-    initialY: Float,
-    initialWidth: Int
-  ) {
-    this.initialDimen = initialWidth
-    this.initialX = initialX
-    this.initialY = initialY
-
-    layoutParams = LayoutHelper.getFrameParams(
-      context = context,
-      rawWidthPx = initialWidth,
-      rawHeightPx = initialWidth,
-      gravity = Gravity.TOP or Gravity.START
-    )
-    setMargins(top = initialTopMargin)
-    translationX = initialX
-    translationY = initialY
-    initialFrameImageView?.setImageBitmap(initialBitmap)
-    previewView?.let { cameraController.setSurfaceProvider(it.surfaceProvider) }
+    setupOverlayImageView()
+    setOnClickListener { animateShow() }
   }
 
   override fun onAttachedToWindow() {
@@ -108,7 +96,8 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
 
       transitionSet.addListener(object : Transition.TransitionListener {
         override fun onTransitionStart(transition: Transition) {
-          initialFrameImageView?.isVisible = false
+          this@CameraView.elevation = dpToPx(4f).toFloat()
+          overlayImageView?.isVisible = false
         }
 
         override fun onTransitionEnd(transition: Transition) {
@@ -144,15 +133,13 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
 
     transitionSet.addListener(object : Transition.TransitionListener {
       override fun onTransitionStart(transition: Transition) {
-        initialFrameImageView?.setImageBitmap(previewView?.bitmap)
-        initialFrameImageView?.isVisible = true
         cameraController.cancelFocusAndMetering()
-        cameraController.clearSurfaceProvider()
         closeImageView?.isVisible = false
-        onHideAnimStartedListener?.invoke()
       }
 
       override fun onTransitionEnd(transition: Transition) {
+        this@CameraView.elevation = 0f
+        overlayImageView?.isVisible = true
         onHideAnimCompleteListener?.invoke()
       }
 
@@ -171,9 +158,13 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
       rawHeightPx = initialDimen,
       gravity = Gravity.TOP or Gravity.START
     )
-    translationX = initialX
-    translationY = initialY
+    translationX = initialTranslation
+    translationY = initialTranslation
     setMargins(top = initialTopMargin)
+  }
+
+  fun getSurfaceProvider(): Preview.SurfaceProvider? {
+    return previewView?.surfaceProvider
   }
 
   fun onHideAnimationStarted(listener: () -> Unit) {
@@ -229,17 +220,19 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     closeImageView?.let { addView(it) }
   }
 
-  private fun setupInitialFrameImageView() {
-    initialFrameImageView = ImageView(context).apply {
+  private fun setupOverlayImageView() {
+    overlayImageView = ImageView(context).apply {
       layoutParams = LayoutHelper.getFrameParams(
         context = context,
         width = LayoutHelper.MATCH_PARENT,
         height = LayoutHelper.MATCH_PARENT,
         gravity = Gravity.START or Gravity.TOP
       )
-      scaleType = ImageView.ScaleType.CENTER_CROP
+      setImageResource(R.drawable.ic_photo_camera_white_24dp)
+      scaleType = ImageView.ScaleType.CENTER
+      setOnClickListener { animateShow() }
     }
-    initialFrameImageView?.let { addView(it) }
+    overlayImageView?.let { addView(it) }
   }
 
   private fun onCameraFocus(focusX: Float, focusY: Float) {
@@ -294,8 +287,8 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
         if (it == focusAnimatorSet) {
           focusAnimatorSet = null
           safeHandler?.postDelayed({
-            this@PhotoCaptureView.removeView(innerTouchView)
-            this@PhotoCaptureView.removeView(outerTouchView)
+            this@CameraView.removeView(innerTouchView)
+            this@CameraView.removeView(outerTouchView)
           }, 150L)
         }
       }
@@ -313,14 +306,6 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
     private const val CAPTURE_DISAPPEARANCE_DURATION = 120L
     private const val FOCUS_TOUCH_DURATION = 350L
 
-    fun newInstance(
-      parentContext: Context,
-      initialBitmap: Bitmap?,
-      initialX: Float,
-      initialY: Float,
-      initialWidth: Int
-    ) = PhotoCaptureView(parentContext).apply {
-      doAfterInit(initialBitmap, initialX, initialY, initialWidth)
-    }
+    fun newInstance(parentContext: Context) = CameraView(parentContext)
   }
 }

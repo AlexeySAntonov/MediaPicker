@@ -1,4 +1,4 @@
-package com.aleksejantonov.mediapicker.photocapture.business
+package com.aleksejantonov.mediapicker.cameraview.business
 
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.Preview
