@@ -30,7 +30,7 @@ class PhotoCaptureView(context: Context, attributeSet: AttributeSet? = null) : F
 
   private val screenHeight by lazy { context.getScreenHeight() }
   private var safeHandler: Handler? = null
-  private val cameraController by lazy { SL.cameraController }
+  private val cameraController by lazy { SL.initAndGetCameraController() }
 
   private var previewView: PreviewView? = null
   private var closeImageView: ImageView? = null

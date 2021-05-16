@@ -38,7 +38,7 @@ import java.lang.ref.WeakReference
 class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable, LifecycleOwner {
 
   private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
-  private val cameraController by lazy { SL.cameraController }
+  private val cameraController by lazy { SL.initAndGetCameraController() }
 
   private val screenHeight by lazy { context.getScreenHeight() }
   private var singleImage: Boolean = false
@@ -67,7 +67,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
 
   private val viewModel by lazy {
     MediaPickerViewModel(
-      mediaProvider = SL.mediaProvider,
+      mediaProvider = SL.initAndGetMediaProvider(),
       singleImage = singleImage,
       limit = limit
     )

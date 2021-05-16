@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.base.mvvm.BaseViewModel
 import com.aleksejantonov.mediapicker.base.mvvm.SingleLiveEvent
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
@@ -88,5 +89,7 @@ class MediaPickerViewModel(
 
   override fun onCleared() {
     selectionInteractor.reset()
+    SL.releaseMediaProvider()
+    SL.releaseCameraController()
   }
 }
