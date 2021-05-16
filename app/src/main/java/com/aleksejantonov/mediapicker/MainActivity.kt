@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
   private fun showMediaPickerView() {
     mediaPickerView = MediaPickerView.newInstance(modalHost.context).apply {
       modalHost.addView(this)
-      onCameraClick { bitmap ->  photoCaptureView ?: showPhotoCaptureView(bitmap) }
+      onCameraClick { bitmap, x, y, width ->  photoCaptureView ?: showPhotoCaptureView(bitmap, x, y, width) }
       onHideAnimationComplete {
         mediaPickerView?.let {
           modalHost.removeView(it)
@@ -60,14 +60,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     }
   }
 
-  private fun showPhotoCaptureView(initialBitmap: Bitmap?) {
-    photoCaptureView = PhotoCaptureView.newInstance(modalHost.context, initialBitmap).apply {
+  private fun showPhotoCaptureView(initialBitmap: Bitmap?, initialX: Float, initialY: Float, initialWidth: Int) {
+    photoCaptureView = PhotoCaptureView.newInstance(modalHost.context, initialBitmap, initialX, initialY, initialWidth).apply {
       modalHost.addView(this)
+      onHideAnimationStarted { mediaPickerView?.onFocus() }
       onHideAnimationComplete {
         photoCaptureView?.let {
           modalHost.removeView(it)
           photoCaptureView = null
-          mediaPickerView?.onFocus()
         }
       }
       animateShow()

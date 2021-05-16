@@ -50,14 +50,14 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private var doneButton: MaterialButton? = null
   private var animatorSet: AnimatorSet? = null
 
-  private var onCameraClickListener: ((Bitmap?) -> Unit)? = null
+  private var onCameraClickListener: ((Bitmap?, Float, Float, Int) -> Unit)? = null
   private var onHideAnimCompleteListener: (() -> Unit)? = null
 
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
       lifeCycleOwner = WeakReference(this),
       cameraController = cameraController,
-      onCameraClick = { bitmap ->  onCameraClickListener?.invoke(bitmap) },
+      onCameraClick = { bitmap, x, y, width ->  onCameraClickListener?.invoke(bitmap, x, y, width) },
       onMediaClick = { viewModel.onMediaClick(it) },
     )
   }
@@ -151,7 +151,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     return lifecycleRegistry
   }
 
-  fun onCameraClick(listener: (Bitmap?) -> Unit) {
+  fun onCameraClick(listener: (Bitmap?, Float, Float, Int) -> Unit) {
     this.onCameraClickListener = listener
   }
 

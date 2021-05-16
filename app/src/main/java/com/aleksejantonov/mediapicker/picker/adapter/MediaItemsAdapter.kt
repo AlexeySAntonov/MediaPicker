@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference
 class MediaItemsAdapter(
   private val lifeCycleOwner: WeakReference<LifecycleOwner>,
   private val cameraController: ICameraController,
-  private val onCameraClick: (Bitmap?) -> Unit,
+  private val onCameraClick: (Bitmap?, Float, Float, Int) -> Unit,
   private val onMediaClick: (GalleryMediaItem) -> Unit,
 ) : AsyncListDifferDelegationAdapter<DiffListItem>(DIFF_CALLBACK) {
 

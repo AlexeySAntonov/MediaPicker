@@ -16,12 +16,13 @@ import com.aleksejantonov.mediapicker.photocapture.business.ICameraController
 import com.aleksejantonov.mediapicker.picker.MediaPickerView.Companion.GALLERY_APPEARANCE_DURATION
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import kotlinx.android.synthetic.main.item_camera.view.*
+import timber.log.Timber
 import java.lang.ref.WeakReference
 
 class CameraCaptureDelegate(
   private val lifeCycleOwner: WeakReference<LifecycleOwner>,
   private val cameraController: ICameraController,
-  private val listener: (Bitmap?) -> Unit
+  private val listener: (Bitmap?, Float, Float, Int) -> Unit
 ) : AbsListItemAdapterDelegate<CameraCaptureItem, DiffListItem, CameraCaptureDelegate.ViewHolder>() {
 
   override fun isForViewType(item: DiffListItem, items: MutableList<DiffListItem>, position: Int) = item is CameraCaptureItem
@@ -48,8 +49,7 @@ class CameraCaptureDelegate(
       with(itemView) {
         startCameraPreview()
         setOnClickListener {
-          viewFinder.hideAndShowWithDelay(CAPTURE_APPEARANCE_DURATION * 2)
-          listener.invoke(viewFinder.bitmap)
+          listener.invoke(viewFinder.bitmap, itemView.x, itemView.y, itemView.width)
         }
       }
     }
