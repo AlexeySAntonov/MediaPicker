@@ -36,7 +36,8 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private val screenWidth by lazy { context.getScreenWidth() }
   private val initialDimen by lazy { (screenWidth - dpToPx(6f)) / 3 }
   private val initialTopMargin by lazy { statusBarHeight() + dpToPx(FAKE_TOOLBAR_HEIGHT.toFloat()) }
-  private val initialTranslation by lazy { dpToPx(1f).toFloat() }
+  private val initialTranslationX by lazy { dpToPx(1f).toFloat() }
+  private var initialTranslationY = dpToPx(1f).toFloat()
   private var safeHandler: Handler? = null
   private val cameraController by lazy { SL.initAndGetCameraController() }
 
@@ -45,7 +46,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var overlayImageView: ImageView? = null
   private var focusAnimatorSet: AnimatorSet? = null
 
-  private var onHideAnimStartedListener: (() -> Unit)? = null
+  private var onShowAnimStartedListener: (() -> Unit)? = null
   private var onHideAnimCompleteListener: (() -> Unit)? = null
   private val previewStreamStateObserver = Observer<PreviewView.StreamState> { onPreviewState(it) }
 
@@ -57,8 +58,8 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
       gravity = Gravity.TOP or Gravity.START
     )
     setMargins(top = initialTopMargin)
-    translationX = initialTranslation
-    translationY = initialTranslation
+    translationX = initialTranslationX
+    translationY = initialTranslationY
     setBackgroundResource(R.color.appBlack)
     isClickable = true
     isFocusable = true
@@ -95,6 +96,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
 
       transitionSet.addListener(object : Transition.TransitionListener {
         override fun onTransitionStart(transition: Transition) {
+          onShowAnimStartedListener?.invoke()
           this@CameraView.elevation = dpToPx(4f).toFloat()
           overlayImageView?.isVisible = false
         }
@@ -119,6 +121,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         gravity = Gravity.TOP or Gravity.START
       )
       translationX = 0.0f
+      initialTranslationY = translationY
       translationY = 0.0f
       setMargins(top = 0)
     }
@@ -142,6 +145,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
       }
 
       override fun onTransitionEnd(transition: Transition) {
+        onHideAnimCompleteListener?.invoke()
         this@CameraView.elevation = 0f
         previewView?.isVisible = true
         overlayImageView?.setImageResource(R.drawable.ic_photo_camera_white_24dp)
@@ -163,8 +167,8 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
       rawHeightPx = initialDimen,
       gravity = Gravity.TOP or Gravity.START
     )
-    translationX = initialTranslation
-    translationY = initialTranslation
+    translationX = initialTranslationX
+    translationY = initialTranslationY
     setMargins(top = initialTopMargin)
   }
 
@@ -172,8 +176,8 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     return previewView?.surfaceProvider
   }
 
-  fun onHideAnimationStarted(listener: () -> Unit) {
-    this.onHideAnimStartedListener = listener
+  fun onShowAnimationStarted(listener: () -> Unit) {
+    this.onShowAnimStartedListener = listener
   }
 
   fun onHideAnimationComplete(listener: () -> Unit) {

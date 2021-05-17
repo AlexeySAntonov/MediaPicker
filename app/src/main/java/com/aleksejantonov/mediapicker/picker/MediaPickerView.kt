@@ -53,7 +53,6 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private var titleTextView: TextView? = null
   private var animatorSet: AnimatorSet? = null
 
-  private var onCameraClickListener: ((Bitmap?, Float, Float, Int) -> Unit)? = null
   private var onHideAnimCompleteListener: (() -> Unit)? = null
 
   private val mediaAdapter by lazy {
@@ -266,6 +265,8 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private fun setupCameraView() {
     cameraView = CameraView.newInstance(context)
     cameraView?.let { addView(it) }
+    cameraView?.onShowAnimationStarted { suppressPickerUI(true) }
+    cameraView?.onHideAnimationComplete { suppressPickerUI(false) }
     cameraView?.getSurfaceProvider()?.let { cameraController.initCameraProvider(WeakReference(this), it) }
   }
 
@@ -307,6 +308,11 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       }
     }
     doneButton?.animateVisibility(selectedCount > 0)
+  }
+
+  private fun suppressPickerUI(suppress: Boolean) {
+    mediaRecyclerView?.stopScroll()
+    mediaRecyclerView?.suppressLayout(suppress)
   }
 
   private fun onSelectionLimitReached() {
