@@ -65,7 +65,6 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     setupPreviewView()
     setupCloseButton()
     setupOverlayImageView()
-    setOnClickListener { animateShow() }
   }
 
   override fun onAttachedToWindow() {
@@ -134,12 +133,18 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     transitionSet.addListener(object : Transition.TransitionListener {
       override fun onTransitionStart(transition: Transition) {
         cameraController.cancelFocusAndMetering()
+        // SurfaceView animation limitation, cover with bitmap on hide transition for now
+        // https://developer.android.com/training/transitions#Limitations
+        overlayImageView?.setImageBitmap(previewView?.bitmap)
+        overlayImageView?.isVisible = true
+        previewView?.isVisible = false
         closeImageView?.isVisible = false
       }
 
       override fun onTransitionEnd(transition: Transition) {
         this@CameraView.elevation = 0f
-        overlayImageView?.isVisible = true
+        previewView?.isVisible = true
+        overlayImageView?.setImageResource(R.drawable.ic_photo_camera_white_24dp)
         onHideAnimCompleteListener?.invoke()
       }
 
