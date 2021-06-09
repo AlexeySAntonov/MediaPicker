@@ -46,6 +46,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var overlayImageView: ImageView? = null
   private var focusAnimatorSet: AnimatorSet? = null
 
+  private var onShowAnimPreparationListener: (() -> Unit)? = null
   private var onShowAnimStartedListener: (() -> Unit)? = null
   private var onHideAnimCompleteListener: (() -> Unit)? = null
   private val previewStreamStateObserver = Observer<PreviewView.StreamState> { onPreviewState(it) }
@@ -82,6 +83,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   }
 
   override fun animateShow() {
+    onShowAnimPreparationListener?.invoke()
     // Animate only when preview is ready
     previewView?.previewStreamState?.observeForever(previewStreamStateObserver)
   }
@@ -174,6 +176,10 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
 
   fun getSurfaceProvider(): Preview.SurfaceProvider? {
     return previewView?.surfaceProvider
+  }
+
+  fun onShowAnimationPreparation(listener: () -> Unit) {
+    this.onShowAnimPreparationListener = listener
   }
 
   fun onShowAnimationStarted(listener: () -> Unit) {

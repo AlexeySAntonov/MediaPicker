@@ -265,7 +265,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private fun setupCameraView() {
     cameraView = CameraView.newInstance(context)
     cameraView?.let { addView(it) }
-    cameraView?.onShowAnimationStarted { suppressPickerUI(true) }
+    cameraView?.onShowAnimationPreparation { suppressPickerUI(true) }
     cameraView?.onHideAnimationComplete { suppressPickerUI(false) }
     cameraView?.getSurfaceProvider()?.let { cameraController.initCameraProvider(WeakReference(this), it) }
   }
@@ -312,7 +312,6 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
 
   private fun suppressPickerUI(suppress: Boolean) {
     mediaRecyclerView?.stopScroll()
-    mediaRecyclerView?.suppressLayout(suppress)
   }
 
   private fun onSelectionLimitReached() {
