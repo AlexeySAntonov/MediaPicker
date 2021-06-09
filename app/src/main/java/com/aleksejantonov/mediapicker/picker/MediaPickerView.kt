@@ -4,6 +4,8 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.Gravity
@@ -54,6 +56,8 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
 
   private var onHideAnimCompleteListener: (() -> Unit)? = null
   private var cameraViewActive: Boolean = false
+
+  private val safeHandler: Handler by lazy { Handler(Looper.getMainLooper()) }
 
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
@@ -114,6 +118,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     mediaRecyclerView?.removeOnScrollListener(scrollListener)
     animatorSet = null
     cameraController.releaseCameraProvider()
+    safeHandler.removeCallbacksAndMessages(null)
     super.onDetachedFromWindow()
   }
 
@@ -272,7 +277,10 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       suppressPickerUI(false)
       cameraViewActive = false
     }
-    cameraView?.getSurfaceProvider()?.let { cameraController.initCameraProvider(WeakReference(this), it) }
+    safeHandler.postDelayed(
+      { cameraView?.getSurfaceProvider()?.let { cameraController.initCameraProvider(WeakReference(this), it) } },
+      GALLERY_APPEARANCE_DURATION
+    )
   }
 
   private fun bindItems(items: List<DiffListItem>) {
