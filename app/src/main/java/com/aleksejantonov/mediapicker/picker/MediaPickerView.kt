@@ -3,7 +3,6 @@ package com.aleksejantonov.mediapicker.picker
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.AttributeSet
@@ -54,6 +53,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   private var animatorSet: AnimatorSet? = null
 
   private var onHideAnimCompleteListener: (() -> Unit)? = null
+  private var cameraViewActive: Boolean = false
 
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
@@ -160,8 +160,9 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     return lifecycleRegistry
   }
 
-  fun onCameraClick(listener: (Bitmap?, Float, Float, Int) -> Unit) {
-//    this.onCameraClickListener = listener
+  fun onBackPressed() {
+    if (cameraViewActive) cameraView?.animateHide()
+    else animateHide()
   }
 
   fun onHideAnimationComplete(listener: () -> Unit) {
@@ -266,7 +267,11 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
     cameraView = CameraView.newInstance(context)
     cameraView?.let { addView(it) }
     cameraView?.onShowAnimationPreparation { suppressPickerUI(true) }
-    cameraView?.onHideAnimationComplete { suppressPickerUI(false) }
+    cameraView?.onShowAnimationStarted { cameraViewActive = true }
+    cameraView?.onHideAnimationComplete {
+      suppressPickerUI(false)
+      cameraViewActive = false
+    }
     cameraView?.getSurfaceProvider()?.let { cameraController.initCameraProvider(WeakReference(this), it) }
   }
 

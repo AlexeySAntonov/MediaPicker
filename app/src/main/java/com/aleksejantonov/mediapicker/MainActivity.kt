@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
   }
 
   override fun onBackPressed() {
-    mediaPickerView?.animateHide() ?: super.onBackPressed()
+    mediaPickerView?.onBackPressed() ?: super.onBackPressed()
   }
 
   private fun showMediaPickerView() {
