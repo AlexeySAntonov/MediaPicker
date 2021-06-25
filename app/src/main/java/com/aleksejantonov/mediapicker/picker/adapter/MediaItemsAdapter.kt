@@ -5,15 +5,17 @@ import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.CameraMockItemDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.MediaItemDelegate
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
+import com.bumptech.glide.RequestManager
 import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
 
 class MediaItemsAdapter(
+  private val glide: RequestManager,
   private val onMediaClick: (GalleryMediaItem) -> Unit,
 ) : AsyncListDifferDelegationAdapter<DiffListItem>(DIFF_CALLBACK) {
 
   init {
     delegatesManager.apply {
-      addDelegate(MediaItemDelegate(onMediaClick))
+      addDelegate(MediaItemDelegate(glide, onMediaClick))
       addDelegate(CameraMockItemDelegate())
     }
   }

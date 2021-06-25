@@ -33,6 +33,7 @@ import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.cameraview.CameraView
 import com.aleksejantonov.mediapicker.picker.adapter.MediaItemsAdapter
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
+import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import java.lang.ref.WeakReference
 
@@ -61,6 +62,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
 
   private val mediaAdapter by lazy {
     MediaItemsAdapter(
+      glide = Glide.with(this),
       onMediaClick = { viewModel.onMediaClick(it) },
     )
   }

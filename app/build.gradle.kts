@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-  compileSdkVersion(29)
-  buildToolsVersion("29.0.0")
+  compileSdkVersion(30)
+  buildToolsVersion("29.0.3")
   defaultConfig {
     applicationId = "com.aleksejantonov.mediapicker"
     minSdkVersion(21)
-    targetSdkVersion(29)
+    targetSdkVersion(30)
     versionCode = 1
     versionName = "1.0"
   }
@@ -28,19 +28,19 @@ android {
 }
 
 object Versions {
-  const val kotlin = "1.4.32"
+  const val kotlin = "1.5.20"
   const val adapterDelegatesVersion = "4.3.0"
   const val glideVersion = "4.11.0"
-  const val camerax_version = "1.1.0-alpha04"
+  const val camerax_version = "1.1.0-alpha05"
 }
 
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlin}")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0")
   implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
-  implementation("androidx.fragment:fragment-ktx:1.3.3")
-  implementation("androidx.appcompat:appcompat:1.2.0")
-  implementation("androidx.core:core-ktx:1.3.2")
+  implementation("androidx.fragment:fragment-ktx:1.3.5")
+  implementation("androidx.appcompat:appcompat:1.3.0")
+  implementation("androidx.core:core-ktx:1.5.0")
   implementation("androidx.constraintlayout:constraintlayout:2.0.4")
   implementation("com.google.android.material:material:1.3.0")
 
@@ -56,5 +56,5 @@ dependencies {
   // CameraX Lifecycle Library
   implementation("androidx.camera:camera-lifecycle:${Versions.camerax_version}")
   // CameraX View class
-  implementation("androidx.camera:camera-view:1.0.0-alpha24")
+  implementation("androidx.camera:camera-view:1.0.0-alpha25")
 }

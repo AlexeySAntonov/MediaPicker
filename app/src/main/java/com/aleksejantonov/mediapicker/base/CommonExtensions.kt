@@ -80,12 +80,10 @@ fun <E> MutableCollection<E>.replaceAll(collection: Collection<E>) {
     addAll(collection)
 }
 
-fun Context.getPxFromDp(dpValue: Int): Int {
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP, dpValue.toFloat(), resources.displayMetrics
-    )
-        .toInt()
-}
+fun Context.getPxFromDp(dpValue: Int): Int =
+    TypedValue
+    .applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue.toFloat(), resources.displayMetrics)
+    .roundToInt()
 
 fun <T : Fragment> T.withArguments(action: Bundle.() -> Unit): T {
     arguments = Bundle().apply(action)
