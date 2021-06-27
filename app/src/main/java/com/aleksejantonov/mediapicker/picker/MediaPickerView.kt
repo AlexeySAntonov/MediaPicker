@@ -35,7 +35,6 @@ import com.aleksejantonov.mediapicker.picker.adapter.MediaItemsAdapter
 import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMediaItem
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
-import java.lang.ref.WeakReference
 
 class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable, LifecycleOwner {
 
@@ -280,7 +279,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
       cameraViewActive = false
     }
     safeHandler.postDelayed(
-      { cameraView?.getSurfaceProvider()?.let { cameraController.initCameraProvider(WeakReference(this), it) } },
+      { cameraView?.connectWithCameraController(lifeCycleOwner = this) },
       GALLERY_APPEARANCE_DURATION
     )
   }

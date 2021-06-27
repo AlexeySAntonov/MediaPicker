@@ -1,14 +1,16 @@
 package com.aleksejantonov.mediapicker.cameraview.business
 
 import android.content.Context
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.FocusMeteringAction
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.aleksejantonov.mediapicker.cameraview.business.facedetector.FaceDetectorProcessor
+import com.aleksejantonov.mediapicker.cameraview.business.facedetector.IFaceDetectorProcessor
+import com.google.android.gms.tasks.TaskExecutors
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.mlkit.common.MlKitException
+import com.google.mlkit.vision.face.Face
 import timber.log.Timber
 import java.lang.ref.WeakReference
 
@@ -20,9 +22,16 @@ class CameraController(
   private var cameraProvider: ProcessCameraProvider? = null
   private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
   private var previewUseCase: Preview? = null
+  private var analysisUseCase: ImageAnalysis? = null
+  private var imageProcessor: IFaceDetectorProcessor? = null
   private var camera: Camera? = null
 
-  override fun initCameraProvider(lifeCycleOwner: WeakReference<LifecycleOwner>, initialSurfaceProvider: Preview.SurfaceProvider) {
+  override fun initCameraProvider(
+    lifeCycleOwner: WeakReference<LifecycleOwner>,
+    initialSurfaceProvider: Preview.SurfaceProvider,
+    onFaceDetection: (List<Face>) -> Unit,
+    onSourceInfo: (Pair<Int, Int>) -> Unit,
+  ) {
     if (cameraProvider != null && previewUseCase != null) {
       setSurfaceProvider(initialSurfaceProvider)
       return
@@ -32,20 +41,43 @@ class CameraController(
     cameraProviderFuture?.addListener(
       {
         cameraProvider = cameraProviderFuture?.get()
+        imageProcessor = FaceDetectorProcessor()
+
         previewUseCase = Preview.Builder()
           .build()
-          .also { it.setSurfaceProvider(initialSurfaceProvider) }
+          .apply { setSurfaceProvider(initialSurfaceProvider) }
+
+        var sourceInfoObtained = false
+        analysisUseCase = ImageAnalysis.Builder()
+          .build()
+          .apply {
+            setAnalyzer(
+              TaskExecutors.MAIN_THREAD,
+              { imageProxy: ImageProxy ->
+                if (!sourceInfoObtained) {
+                  onSourceInfo.invoke(imageProxy.width to imageProxy.height)
+                  sourceInfoObtained = true
+                }
+                try {
+                  imageProcessor?.processImageProxy(imageProxy, onFaceDetection)
+                } catch (e: MlKitException) {
+                  Timber.e("Failed to process image. Error: ${e.localizedMessage}")
+                }
+              }
+            )
+          }
 
         try {
           // Unbind use cases before rebinding
           previewUseCase?.let { cameraProvider?.unbind(it) }
+          analysisUseCase?.let { cameraProvider?.unbind(it) }
 
           // Select back camera as a default
           val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
           // Bind use cases to camera
           lifeCycleOwner.get()?.let { owner ->
-            previewUseCase?.let { camera = cameraProvider?.bindToLifecycle(owner, cameraSelector, it) }
+            camera = cameraProvider?.bindToLifecycle(owner, cameraSelector, previewUseCase, analysisUseCase)
           }
 
         } catch (e: Exception) {
@@ -79,6 +111,9 @@ class CameraController(
     camera = null
     previewUseCase?.setSurfaceProvider(null)
     previewUseCase = null
+    analysisUseCase = null
+    imageProcessor?.stop()
+    imageProcessor = null
     cameraProvider?.unbindAll()
     cameraProvider = null
   }

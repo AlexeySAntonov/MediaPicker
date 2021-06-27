@@ -57,4 +57,9 @@ dependencies {
   implementation("androidx.camera:camera-lifecycle:${Versions.camerax_version}")
   // CameraX View class
   implementation("androidx.camera:camera-view:1.0.0-alpha25")
+
+  // MLKit
+  implementation("com.google.mlkit:face-detection:16.1.1")
+  implementation("com.google.android.gms:play-services-mlkit-face-detection:16.1.7")
+
 }
