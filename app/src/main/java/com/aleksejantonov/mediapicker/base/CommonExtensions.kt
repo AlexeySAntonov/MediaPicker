@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Point
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.TypedValue
@@ -22,15 +23,25 @@ import java.util.*
 import kotlin.math.roundToInt
 
 fun Context.getScreenHeight(): Int {
-    val size = Point()
-    (this as Activity).windowManager.defaultDisplay.getSize(size)
-    return size.y
+    val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        windowManager.maximumWindowMetrics.bounds.bottom
+    } else {
+        val size = Point()
+        windowManager.defaultDisplay.getRealSize(size)
+        size.y
+    }
 }
 
 fun Context.getScreenWidth(): Int {
-    val size = Point()
-    (this as Activity).windowManager.defaultDisplay.getSize(size)
-    return size.x
+    val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        windowManager.maximumWindowMetrics.bounds.right
+    } else {
+        val size = Point()
+        (this as Activity).windowManager.defaultDisplay.getSize(size)
+        size.x
+    }
 }
 
 fun Fragment.getColor(@ColorRes colorId: Int): Int = context?.let {

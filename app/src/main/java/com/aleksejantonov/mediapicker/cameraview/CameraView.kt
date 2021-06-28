@@ -54,17 +54,6 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var onHideAnimCompleteListener: (() -> Unit)? = null
   private val previewStreamStateObserver = Observer<PreviewView.StreamState> { onPreviewState(it) }
 
-//  private val faceRectPaint: Paint by lazy {
-//    Paint().apply {
-//      style = Paint.Style.STROKE
-//      color = Color.RED
-//      strokeWidth = dpToPx(2f).toFloat()
-//    }
-//  }
-//  private val faceRectList = mutableListOf<Rect>()
-//  private var needToDrawFaceRect: Boolean = false
-//  private var rectScaleFactor: Float = 0f
-
   init {
     layoutParams = LayoutHelper.getFrameParams(
       context = context,
@@ -96,18 +85,6 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     previewView?.previewStreamState?.removeObserver(previewStreamStateObserver)
     super.onDetachedFromWindow()
   }
-
-//  override fun draw(canvas: Canvas) {
-//    super.draw(canvas)
-//    if (needToDrawFaceRect && faceRectList.isNotEmpty()) {
-//      for (faceRect in faceRectList) {
-//        Timber.e("On draw rect: ${faceRect.left}, ${faceRect.top}, ${faceRect.right}, ${faceRect.bottom}")
-//        canvas.drawRect(faceRect, faceRectPaint)
-//      }
-//      needToDrawFaceRect = false
-//      faceRectList.clear()
-//    }
-//  }
 
   override fun animateShow() {
     onShowAnimPreparationListener?.invoke()
@@ -349,27 +326,6 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
       start()
     }
   }
-
-//  private fun onFaceDetection(faces: List<Face>) {
-//    if (faces.isNotEmpty()) {
-//      for (face in faces) {
-//        faceRectList.add(Rect(
-//          face.boundingBox.left,
-//          face.boundingBox.top,
-//          face.boundingBox.right,
-//          face.boundingBox.bottom
-//        ))
-//      }
-//      needToDrawFaceRect = true
-//      invalidate()
-//    }
-//  }
-//
-//  private fun onSourceInfo(width: Int, height: Int) {
-//    val heightRatio: Float = screenHeight.toFloat() / height
-//    val widthRatio: Float = screenWidth.toFloat() / width
-//    TODO()
-//  }
 
   companion object {
     private const val CLOSE_IMAGE_DIMEN = 48

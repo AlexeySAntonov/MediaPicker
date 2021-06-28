@@ -5,6 +5,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.cameraview.business.facedetector.FaceDetectorProcessor
 import com.aleksejantonov.mediapicker.cameraview.business.facedetector.IFaceDetectorProcessor
 import com.google.android.gms.tasks.TaskExecutors
@@ -44,11 +45,13 @@ class CameraController(
         imageProcessor = FaceDetectorProcessor()
 
         previewUseCase = Preview.Builder()
+          .setTargetResolution(SL.screenResolution)
           .build()
           .apply { setSurfaceProvider(initialSurfaceProvider) }
 
         var sourceInfoObtained = false
         analysisUseCase = ImageAnalysis.Builder()
+          .setTargetResolution(SL.screenResolution)
           .build()
           .apply {
             setAnalyzer(
