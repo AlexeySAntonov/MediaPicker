@@ -29,10 +29,7 @@ import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
-import com.google.mlkit.vision.face.Face
-import timber.log.Timber
 import java.lang.ref.WeakReference
-import kotlin.math.roundToInt
 
 
 class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
@@ -49,6 +46,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var previewView: PreviewView? = null
   private var closeImageView: ImageView? = null
   private var overlayImageView: ImageView? = null
+  private var detectionSurfaceView: DetectionSurfaceView? = null
   private var focusAnimatorSet: AnimatorSet? = null
 
   private var onShowAnimPreparationListener: (() -> Unit)? = null
@@ -56,16 +54,16 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var onHideAnimCompleteListener: (() -> Unit)? = null
   private val previewStreamStateObserver = Observer<PreviewView.StreamState> { onPreviewState(it) }
 
-  private val faceRectPaint: Paint by lazy {
-    Paint().apply {
-      style = Paint.Style.STROKE
-      color = Color.RED
-      strokeWidth = dpToPx(2f).toFloat()
-    }
-  }
-  private val faceRectList = mutableListOf<Rect>()
-  private var needToDrawFaceRect: Boolean = false
-  private var rectScaleFactor: Float = 0f
+//  private val faceRectPaint: Paint by lazy {
+//    Paint().apply {
+//      style = Paint.Style.STROKE
+//      color = Color.RED
+//      strokeWidth = dpToPx(2f).toFloat()
+//    }
+//  }
+//  private val faceRectList = mutableListOf<Rect>()
+//  private var needToDrawFaceRect: Boolean = false
+//  private var rectScaleFactor: Float = 0f
 
   init {
     layoutParams = LayoutHelper.getFrameParams(
@@ -83,6 +81,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     setupPreviewView()
     setupCloseButton()
     setupOverlayImageView()
+    setupDetectionSurfaceView()
   }
 
   override fun onAttachedToWindow() {
@@ -98,17 +97,17 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     super.onDetachedFromWindow()
   }
 
-  override fun draw(canvas: Canvas) {
-    super.draw(canvas)
-    if (needToDrawFaceRect && faceRectList.isNotEmpty()) {
-      for (faceRect in faceRectList) {
-        Timber.e("On draw rect: ${faceRect.left}, ${faceRect.top}, ${faceRect.right}, ${faceRect.bottom}")
-        canvas.drawRect(faceRect, faceRectPaint)
-      }
-      needToDrawFaceRect = false
-      faceRectList.clear()
-    }
-  }
+//  override fun draw(canvas: Canvas) {
+//    super.draw(canvas)
+//    if (needToDrawFaceRect && faceRectList.isNotEmpty()) {
+//      for (faceRect in faceRectList) {
+//        Timber.e("On draw rect: ${faceRect.left}, ${faceRect.top}, ${faceRect.right}, ${faceRect.bottom}")
+//        canvas.drawRect(faceRect, faceRectPaint)
+//      }
+//      needToDrawFaceRect = false
+//      faceRectList.clear()
+//    }
+//  }
 
   override fun animateShow() {
     onShowAnimPreparationListener?.invoke()
@@ -207,8 +206,8 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
       cameraController.initCameraProvider(
         lifeCycleOwner = WeakReference(lifeCycleOwner),
         initialSurfaceProvider = it,
-        onFaceDetection = { faces -> onFaceDetection(faces) },
-        onSourceInfo = { (width, height) -> onSourceInfo(width, height) },
+        onFaceDetection = { faces -> detectionSurfaceView?.onFaceDetection(faces) },
+        onSourceInfo = { (width, height) -> detectionSurfaceView?.onSourceInfo(width, height) },
       )
     }
   }
@@ -285,6 +284,11 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     overlayImageView?.let { addView(it) }
   }
 
+  private fun setupDetectionSurfaceView() {
+    detectionSurfaceView = DetectionSurfaceView(context)
+    detectionSurfaceView?.let { addView(it) }
+  }
+
   private fun onCameraFocus(focusX: Float, focusY: Float) {
     val innerTouchView = View(context).apply {
       layoutParams = LayoutHelper.getFrameParams(
@@ -346,26 +350,26 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     }
   }
 
-  private fun onFaceDetection(faces: List<Face>) {
-    if (faces.isNotEmpty()) {
-      for (face in faces) {
-        faceRectList.add(Rect(
-          face.boundingBox.left,
-          face.boundingBox.top,
-          face.boundingBox.right,
-          face.boundingBox.bottom
-        ))
-      }
-      needToDrawFaceRect = true
-      invalidate()
-    }
-  }
-
-  private fun onSourceInfo(width: Int, height: Int) {
-    val heightRatio: Float = screenHeight.toFloat() / height
-    val widthRatio: Float = screenWidth.toFloat() / width
-    TODO()
-  }
+//  private fun onFaceDetection(faces: List<Face>) {
+//    if (faces.isNotEmpty()) {
+//      for (face in faces) {
+//        faceRectList.add(Rect(
+//          face.boundingBox.left,
+//          face.boundingBox.top,
+//          face.boundingBox.right,
+//          face.boundingBox.bottom
+//        ))
+//      }
+//      needToDrawFaceRect = true
+//      invalidate()
+//    }
+//  }
+//
+//  private fun onSourceInfo(width: Int, height: Int) {
+//    val heightRatio: Float = screenHeight.toFloat() / height
+//    val widthRatio: Float = screenWidth.toFloat() / width
+//    TODO()
+//  }
 
   companion object {
     private const val CLOSE_IMAGE_DIMEN = 48
