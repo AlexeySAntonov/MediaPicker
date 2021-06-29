@@ -43,8 +43,8 @@ class DetectionSurfaceView(context: Context) : View(context) {
     if (faces.isNotEmpty()) {
       for (face in faces) faceRectList.add(face.boundingBox)
       needToDrawFaceRect = true
-      invalidate()
     }
+    invalidate()
   }
 
   fun onSourceInfo(width: Int, height: Int) {

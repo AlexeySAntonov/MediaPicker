@@ -22,7 +22,7 @@ class FaceDetectorProcessor : IFaceDetectorProcessor {
       .setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
       .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
       .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-      .setMinFaceSize(0.4f)
+      .setMinFaceSize(0.2f)
       .build()
 
     detector = FaceDetection.getClient(faceDetectorOptions)
