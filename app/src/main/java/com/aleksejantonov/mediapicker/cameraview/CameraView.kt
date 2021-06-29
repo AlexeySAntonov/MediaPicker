@@ -184,6 +184,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         lifeCycleOwner = WeakReference(lifeCycleOwner),
         initialSurfaceProvider = it,
         onFaceDetection = { faces -> detectionSurfaceView?.onFaceDetection(faces) },
+        onPoseDetection = { pose -> detectionSurfaceView?.onPoseDetection(pose) },
         onSourceInfo = { (width, height) -> detectionSurfaceView?.onSourceInfo(width, height) },
       )
     }

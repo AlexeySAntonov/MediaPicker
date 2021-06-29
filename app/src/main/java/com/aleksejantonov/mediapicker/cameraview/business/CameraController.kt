@@ -8,10 +8,13 @@ import androidx.lifecycle.LifecycleOwner
 import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.cameraview.business.facedetector.FaceDetectorProcessor
 import com.aleksejantonov.mediapicker.cameraview.business.facedetector.IFaceDetectorProcessor
+import com.aleksejantonov.mediapicker.cameraview.business.posedetector.IPoseDetectorProcessor
+import com.aleksejantonov.mediapicker.cameraview.business.posedetector.PoseDetectorProcessor
 import com.google.android.gms.tasks.TaskExecutors
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.face.Face
+import com.google.mlkit.vision.pose.Pose
 import timber.log.Timber
 import java.lang.ref.WeakReference
 
@@ -24,13 +27,15 @@ class CameraController(
   private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
   private var previewUseCase: Preview? = null
   private var analysisUseCase: ImageAnalysis? = null
-  private var imageProcessor: IFaceDetectorProcessor? = null
+  private var faceProcessor: IFaceDetectorProcessor? = null
+  private var poseProcessor: IPoseDetectorProcessor? = null
   private var camera: Camera? = null
 
   override fun initCameraProvider(
     lifeCycleOwner: WeakReference<LifecycleOwner>,
     initialSurfaceProvider: Preview.SurfaceProvider,
     onFaceDetection: (List<Face>) -> Unit,
+    onPoseDetection: (Pose) -> Unit,
     onSourceInfo: (Pair<Int, Int>) -> Unit,
   ) {
     if (cameraProvider != null && previewUseCase != null) {
@@ -42,7 +47,8 @@ class CameraController(
     cameraProviderFuture?.addListener(
       {
         cameraProvider = cameraProviderFuture?.get()
-        imageProcessor = FaceDetectorProcessor()
+        faceProcessor = FaceDetectorProcessor()
+        poseProcessor = PoseDetectorProcessor()
 
         previewUseCase = Preview.Builder()
           .setTargetResolution(SL.screenResolution)
@@ -62,7 +68,8 @@ class CameraController(
                   sourceInfoObtained = true
                 }
                 try {
-                  imageProcessor?.processImageProxy(imageProxy, onFaceDetection)
+                  faceProcessor?.processImageProxy(imageProxy, onFaceDetection)
+                  poseProcessor?.processImageProxy(imageProxy, onPoseDetection)
                 } catch (e: MlKitException) {
                   Timber.e("Failed to process image. Error: ${e.localizedMessage}")
                 }
@@ -115,8 +122,10 @@ class CameraController(
     previewUseCase?.setSurfaceProvider(null)
     previewUseCase = null
     analysisUseCase = null
-    imageProcessor?.stop()
-    imageProcessor = null
+    faceProcessor?.stop()
+    faceProcessor = null
+    poseProcessor?.stop()
+    poseProcessor = null
     cameraProvider?.unbindAll()
     cameraProvider = null
   }

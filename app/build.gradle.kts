@@ -61,5 +61,6 @@ dependencies {
   // MLKit
   implementation("com.google.mlkit:face-detection:16.1.1")
   implementation("com.google.android.gms:play-services-mlkit-face-detection:16.1.7")
+  implementation("com.google.mlkit:pose-detection:17.0.1-beta3")
 
 }
