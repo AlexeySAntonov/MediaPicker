@@ -30,7 +30,8 @@ import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.cameraview.captureview.CaptureView
-import com.bumptech.glide.Glide
+import com.aleksejantonov.mediapicker.mediapreview.MediaPreview
+import java.io.File
 import java.lang.ref.WeakReference
 
 
@@ -50,6 +51,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var overlayImageView: ImageView? = null
   private var detectionSurfaceView: DetectionSurfaceView? = null
   private var captureView: CaptureView? = null
+  private var mediaPreview: MediaPreview? = null
   private var focusAnimatorSet: AnimatorSet? = null
 
   private var onShowAnimPreparationListener: (() -> Unit)? = null
@@ -278,19 +280,20 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     captureView = CaptureView(context).apply {
       isVisible = false
       onCaptureClick {
-        cameraController.onImageCapture({
-          // TODO: Just check for now, need special view for capture preview
-          overlayImageView?.let { overlay ->
-            overlay.isVisible = true
-            Glide.with(this)
-              .load(it)
-              .centerCrop()
-              .into(overlay)
-          }
-        })
+        cameraController.onImageCapture({ setupCapturedPreview(it) })
       }
     }
     captureView?.let { addView(it) }
+  }
+
+  private fun setupCapturedPreview(file: File) {
+    mediaPreview = MediaPreview.newInstance(context = context, file = file).apply {
+      onDismiss {
+        this@CameraView.removeView(mediaPreview)
+        mediaPreview = null
+      }
+    }
+    mediaPreview?.let { addView(it) }
   }
 
   private fun onCameraFocus(focusX: Float, focusY: Float) {
