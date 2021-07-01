@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
+import android.os.Build
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
@@ -16,6 +17,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.exifinterface.media.ExifInterface
 import com.aleksejantonov.mediapicker.R
@@ -123,7 +125,10 @@ class MediaPreview(context: Context, attributeSet: AttributeSet? = null) : Frame
       scaleType = ImageView.ScaleType.CENTER
       setImageResource(R.drawable.ic_delete_40)
       setColorFilter(Color.WHITE)
-      setBackgroundResource(R.drawable.selector_button_light)
+      setBackgroundResource(R.drawable.background_circle_grey)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        foreground = ResourcesCompat.getDrawable(resources, R.drawable.selector_button_light, context.theme)
+      }
       setOnClickListener { animateHide() }
     }
     clearButton?.let { addView(it) }
@@ -142,7 +147,10 @@ class MediaPreview(context: Context, attributeSet: AttributeSet? = null) : Frame
       scaleType = ImageView.ScaleType.CENTER
       setImageResource(R.drawable.ic_done_40)
       setColorFilter(Color.WHITE)
-      setBackgroundResource(R.drawable.selector_button_light)
+      setBackgroundResource(R.drawable.background_circle_grey)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        foreground = ResourcesCompat.getDrawable(resources, R.drawable.selector_button_light, context.theme)
+      }
       setOnClickListener { animateHide() }
     }
     applyButton?.let { addView(it) }

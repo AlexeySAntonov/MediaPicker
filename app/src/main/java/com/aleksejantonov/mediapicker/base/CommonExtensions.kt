@@ -8,6 +8,8 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.View
@@ -215,4 +217,13 @@ fun View.hideAndShowWithDelay(delay: Long) {
         .withStartAction { isVisible = false }
         .withEndAction { isVisible = true }
         .start()
+}
+
+fun Context.vibrate(millis: Long = 100L) {
+    val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createOneShot(millis, VibrationEffect.DEFAULT_AMPLITUDE))
+    } else {
+        vibrator.vibrate(millis)
+    }
 }

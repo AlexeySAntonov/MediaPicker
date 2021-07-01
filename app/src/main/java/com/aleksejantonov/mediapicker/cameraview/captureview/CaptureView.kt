@@ -11,6 +11,7 @@ import com.aleksejantonov.mediapicker.base.dpToPx
 import com.aleksejantonov.mediapicker.base.navBarHeight
 import com.aleksejantonov.mediapicker.base.setMargins
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
+import com.aleksejantonov.mediapicker.base.vibrate
 import com.google.android.material.button.MaterialButton
 
 class CaptureView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
@@ -63,7 +64,10 @@ class CaptureView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
       setRippleColorResource(R.color.semiTransparent)
       setBackgroundColor(ContextCompat.getColor(context, R.color.white))
       alpha = 0.75f
-      setOnClickListener { captureClickListener?.invoke() }
+      setOnClickListener {
+        context.vibrate(50L)
+        captureClickListener?.invoke()
+      }
     }
     captureButton?.let { addView(it) }
   }
