@@ -211,6 +211,13 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     this.onHideAnimCompleteListener = listener
   }
 
+  fun onBackPressed() {
+    mediaPreview?.let {
+      removeView(it)
+      mediaPreview = null
+    } ?: animateHide()
+  }
+
   @SuppressLint("ClickableViewAccessibility")
   private fun setupPreviewView() {
     previewView = PreviewView(context).apply {
@@ -280,7 +287,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     captureView = CaptureView(context).apply {
       isVisible = false
       onCaptureClick {
-        cameraController.onImageCapture({ setupCapturedPreview(it) })
+        cameraController.onImageCapture({ mediaPreview ?: setupCapturedPreview(it) })
       }
     }
     captureView?.let { addView(it) }

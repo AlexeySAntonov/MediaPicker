@@ -167,7 +167,7 @@ class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : Fr
   }
 
   fun onBackPressed() {
-    if (cameraViewActive) cameraView?.animateHide()
+    if (cameraViewActive) cameraView?.onBackPressed()
     else animateHide()
   }
 
