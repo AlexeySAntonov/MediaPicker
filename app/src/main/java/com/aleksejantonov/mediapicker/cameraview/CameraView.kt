@@ -29,6 +29,8 @@ import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
+import com.aleksejantonov.mediapicker.cameraview.captureview.CaptureView
+import com.bumptech.glide.Glide
 import java.lang.ref.WeakReference
 
 
@@ -47,6 +49,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var closeImageView: ImageView? = null
   private var overlayImageView: ImageView? = null
   private var detectionSurfaceView: DetectionSurfaceView? = null
+  private var captureView: CaptureView? = null
   private var focusAnimatorSet: AnimatorSet? = null
 
   private var onShowAnimPreparationListener: (() -> Unit)? = null
@@ -71,6 +74,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     setupCloseButton()
     setupOverlayImageView()
     setupDetectionSurfaceView()
+    setupCaptureView()
   }
 
   override fun onAttachedToWindow() {
@@ -109,6 +113,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
 
         override fun onTransitionEnd(transition: Transition) {
           closeImageView?.isVisible = true
+          captureView?.isVisible = true
         }
 
         override fun onTransitionCancel(transition: Transition) = Unit
@@ -148,6 +153,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         overlayImageView?.isVisible = true
         previewView?.isVisible = false
         closeImageView?.isVisible = false
+        captureView?.isVisible = false
       }
 
       override fun onTransitionEnd(transition: Transition) {
@@ -186,6 +192,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         onFaceDetection = { faces -> detectionSurfaceView?.onFaceDetection(faces) },
         onPoseDetection = { pose -> detectionSurfaceView?.onPoseDetection(pose) },
         onSourceInfo = { (width, height) -> detectionSurfaceView?.onSourceInfo(width, height) },
+        rotation = this.display.rotation
       )
     }
   }
@@ -265,6 +272,25 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private fun setupDetectionSurfaceView() {
     detectionSurfaceView = DetectionSurfaceView(context)
     detectionSurfaceView?.let { addView(it) }
+  }
+
+  private fun setupCaptureView() {
+    captureView = CaptureView(context).apply {
+      isVisible = false
+      onCaptureClick {
+        cameraController.onImageCapture({
+          // TODO: Just check for now, need special view for capture preview
+          overlayImageView?.let { overlay ->
+            overlay.isVisible = true
+            Glide.with(this)
+              .load(it)
+              .centerCrop()
+              .into(overlay)
+          }
+        })
+      }
+    }
+    captureView?.let { addView(it) }
   }
 
   private fun onCameraFocus(focusX: Float, focusY: Float) {

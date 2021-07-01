@@ -5,6 +5,7 @@ import androidx.camera.core.Preview
 import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.pose.Pose
+import java.io.File
 import java.lang.ref.WeakReference
 
 interface ICameraController {
@@ -14,7 +15,14 @@ interface ICameraController {
     onFaceDetection: (List<Face>) -> Unit,
     onPoseDetection: (Pose) -> Unit,
     onSourceInfo: (Pair<Int, Int>) -> Unit,
+    rotation: Int,
   )
+
+  fun onImageCapture(
+    onImageSaved: (File) -> Unit,
+    onError: () -> Unit = {},
+  )
+
   fun setSurfaceProvider(surfaceProvider: Preview.SurfaceProvider)
   fun clearSurfaceProvider()
   fun startFocusAndMetering(action: FocusMeteringAction)
