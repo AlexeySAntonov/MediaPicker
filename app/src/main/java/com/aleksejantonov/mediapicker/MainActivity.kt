@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
       if (Build.VERSION.SDK_INT < 23 || Build.VERSION.SDK_INT >= 23 && permissionsGranted()) {
         mediaPickerView ?: showMediaPickerView()
       } else {
-        requestPermissions(permissions, 1212)
+        requestPermissions(permissions, PERMISSIONS_REQUEST_CODE)
       }
     }
   }
@@ -38,6 +38,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
   override fun onBackPressed() {
     mediaPickerView?.onBackPressed() ?: super.onBackPressed()
+  }
+
+  @RequiresApi(Build.VERSION_CODES.M)
+  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    if (requestCode == PERMISSIONS_REQUEST_CODE) {
+      if (permissionsGranted()) {
+        mediaPickerView ?: showMediaPickerView()
+      } else {
+        requestPermissions(permissions, PERMISSIONS_REQUEST_CODE)
+      }
+    }
   }
 
   private fun showMediaPickerView() {
@@ -59,5 +71,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
       if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) return false
     }
     return true
+  }
+
+  companion object {
+    const val PERMISSIONS_REQUEST_CODE = 1212
   }
 }
