@@ -48,12 +48,6 @@ fun Fragment.getColor(@ColorRes colorId: Int): Int = context?.let {
     ContextCompat.getColor(it, colorId)
 } ?: 0
 
-var View.isVisible: Boolean
-    get() = visibility == View.VISIBLE
-    set(value) {
-        visibility = if (value) View.VISIBLE else View.GONE
-    }
-
 fun View.animateScale(scaleFactor: Float, duration: Long = 300L) {
     animate()
         .scaleX(scaleFactor)

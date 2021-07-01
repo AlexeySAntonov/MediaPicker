@@ -27,7 +27,7 @@ import androidx.transition.TransitionSet
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.base.*
-import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
+import com.aleksejantonov.mediapicker.base.ui.AnimatableAppearance
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.cameraview.captureview.CaptureView
 import com.aleksejantonov.mediapicker.mediapreview.MediaPreview
@@ -35,7 +35,7 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 
-class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable {
+class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), AnimatableAppearance {
 
   private val screenWidth by lazy { context.getScreenWidth() }
   private val screenHeight by lazy { context.getScreenHeight() }
@@ -159,7 +159,6 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
       }
 
       override fun onTransitionEnd(transition: Transition) {
-        onHideAnimCompleteListener?.invoke()
         this@CameraView.elevation = 0f
         previewView?.isVisible = true
         overlayImageView?.setImageResource(R.drawable.ic_photo_camera_white_24dp)
@@ -212,10 +211,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   }
 
   fun onBackPressed() {
-    mediaPreview?.let {
-      removeView(it)
-      mediaPreview = null
-    } ?: animateHide()
+    mediaPreview?.animateHide() ?: animateHide()
   }
 
   @SuppressLint("ClickableViewAccessibility")
@@ -295,7 +291,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
 
   private fun setupCapturedPreview(file: File) {
     mediaPreview = MediaPreview.newInstance(context = context, file = file).apply {
-      onDismiss {
+      onHideAnimationComplete {
         this@CameraView.removeView(mediaPreview)
         mediaPreview = null
       }

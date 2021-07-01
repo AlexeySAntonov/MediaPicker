@@ -1,6 +1,6 @@
 package com.aleksejantonov.mediapicker.base.ui
 
-interface BottomSheetable {
+interface AnimatableAppearance {
   fun animateShow()
   fun animateHide()
 }

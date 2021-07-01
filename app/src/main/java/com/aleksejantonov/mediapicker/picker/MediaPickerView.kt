@@ -17,6 +17,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -27,7 +28,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.SL
 import com.aleksejantonov.mediapicker.base.*
-import com.aleksejantonov.mediapicker.base.ui.BottomSheetable
+import com.aleksejantonov.mediapicker.base.ui.AnimatableAppearance
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.cameraview.CameraView
@@ -36,7 +37,7 @@ import com.aleksejantonov.mediapicker.picker.adapter.delegate.items.GalleryMedia
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 
-class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), BottomSheetable, LifecycleOwner {
+class MediaPickerView(context: Context, attributeSet: AttributeSet? = null) : FrameLayout(context, attributeSet), AnimatableAppearance, LifecycleOwner {
 
   private var lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
   private val cameraController by lazy { SL.initAndGetCameraController() }

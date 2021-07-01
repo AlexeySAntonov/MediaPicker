@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.Group
+import androidx.core.view.isVisible
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.DiffListItem
