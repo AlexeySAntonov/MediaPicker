@@ -27,7 +27,13 @@ class PoseDetectorProcessor : IPoseDetectorProcessor {
     detector.process(InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees))
       .addOnSuccessListener(executor) { results: Pose -> onDetectionFinished(results) }
       .addOnFailureListener(executor) { e: Exception -> Timber.e(e, "Error detecting pose") }
-      .addOnCompleteListener { image.close() }
+      .addOnCompleteListener {
+        try {
+          image.close()
+        } catch (e: Exception) {
+          Timber.e(e, "Image resource cannot be closed")
+        }
+      }
   }
 
   override fun stop() {

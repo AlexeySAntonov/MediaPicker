@@ -35,7 +35,13 @@ class FaceDetectorProcessor : IFaceDetectorProcessor {
       .addOnFailureListener(executor) { e: Exception ->
         Timber.e(e, "Error detecting face")
       }
-      .addOnCompleteListener { image.close() }
+      .addOnCompleteListener {
+        try {
+          image.close()
+        } catch (e: Exception) {
+          Timber.e(e, "Image resource cannot be closed")
+        }
+      }
   }
 
   override fun stop() {
