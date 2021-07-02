@@ -236,16 +236,20 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         when (event.action) {
           MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> return@setOnTouchListener true
           MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
-            // Convert UI coordinates into camera sensor coordinates
-            val point = meteringPointFactory.createPoint(event.x, event.y)
+            if (event.y < (zoomSeekBar?.y ?: screenHeight.toFloat()) - dpToPx(SAFE_GAP_BETWEEN_FOCUS_AND_ZOOM.toFloat())) {
+              // Convert UI coordinates into camera sensor coordinates
+              val point = meteringPointFactory.createPoint(event.x, event.y)
 
-            // Prepare focus action to be triggered
-            val action = FocusMeteringAction.Builder(point).build()
+              // Prepare focus action to be triggered
+              val action = FocusMeteringAction.Builder(point).build()
 
-            // Execute focus action
-            cameraController.startFocusAndMetering(action).also { onCameraFocus(event.x, event.y) }
+              // Execute focus action
+              cameraController.startFocusAndMetering(action).also { onCameraFocus(event.x, event.y) }
 
-            return@setOnTouchListener true
+              return@setOnTouchListener true
+            } else {
+              return@setOnTouchListener false
+            }
           }
           else -> return@setOnTouchListener false
         }
@@ -395,6 +399,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     private const val CLOSE_IMAGE_MARGIN = 4
     private const val FAKE_TOOLBAR_HEIGHT = CLOSE_IMAGE_DIMEN + CLOSE_IMAGE_MARGIN * 2
     private const val FOCUS_VIEW_DIMEN = 48
+    private const val SAFE_GAP_BETWEEN_FOCUS_AND_ZOOM = 16
 
     const val CAPTURE_APPEARANCE_DURATION = 220L
     private const val CAPTURE_DISAPPEARANCE_DURATION = 120L
