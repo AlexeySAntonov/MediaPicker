@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
@@ -224,16 +225,22 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         gravity = Gravity.START or Gravity.TOP
       )
       setOnTouchListener { _, event ->
-        // Convert UI coordinates into camera sensor coordinates
-        val point = meteringPointFactory.createPoint(event.x, event.y)
+        when (event.action) {
+          MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> return@setOnTouchListener true
+          MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+            // Convert UI coordinates into camera sensor coordinates
+            val point = meteringPointFactory.createPoint(event.x, event.y)
 
-        // Prepare focus action to be triggered
-        val action = FocusMeteringAction.Builder(point).build()
+            // Prepare focus action to be triggered
+            val action = FocusMeteringAction.Builder(point).build()
 
-        // Execute focus action
-        cameraController.startFocusAndMetering(action).also { onCameraFocus(event.x, event.y) }
+            // Execute focus action
+            cameraController.startFocusAndMetering(action).also { onCameraFocus(event.x, event.y) }
 
-        return@setOnTouchListener true
+            return@setOnTouchListener true
+          }
+          else -> return@setOnTouchListener false
+        }
       }
     }
     previewView?.let { addView(it) }
