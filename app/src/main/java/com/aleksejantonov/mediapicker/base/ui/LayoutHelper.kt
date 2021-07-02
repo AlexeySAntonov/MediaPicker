@@ -23,17 +23,21 @@ object LayoutHelper {
     width: Int = MATCH_PARENT,
     height: Int = WRAP_CONTENT,
     gravity: Int = Gravity.CENTER,
+    rawLeftMargin: Int? = null,
     leftMargin: Int = 0,
+    rawTopMargin: Int? = null,
     topMargin: Int = 0,
+    rawRightMargin: Int? = null,
     rightMargin: Int = 0,
+    rawBottomMargin: Int? = null,
     bottomMargin: Int = 0
   ): FrameLayout.LayoutParams {
     val layoutParams = FrameLayout.LayoutParams(rawWidthPx ?: getSize(context, width), rawHeightPx ?: getSize(context, height), gravity)
     layoutParams.setMargins(
-      context.dpToPx(leftMargin.toFloat()),
-      context.dpToPx(topMargin.toFloat()),
-      context.dpToPx(rightMargin.toFloat()),
-      context.dpToPx(bottomMargin.toFloat())
+      rawLeftMargin ?: context.dpToPx(leftMargin.toFloat()),
+      rawTopMargin ?: context.dpToPx(topMargin.toFloat()),
+      rawRightMargin ?: context.dpToPx(rightMargin.toFloat()),
+      rawBottomMargin ?: context.dpToPx(bottomMargin.toFloat())
     )
     return layoutParams
   }

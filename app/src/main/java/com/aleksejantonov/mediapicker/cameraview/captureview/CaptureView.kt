@@ -8,8 +8,6 @@ import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import com.aleksejantonov.mediapicker.R
 import com.aleksejantonov.mediapicker.base.dpToPx
-import com.aleksejantonov.mediapicker.base.navBarHeight
-import com.aleksejantonov.mediapicker.base.setMargins
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.base.vibrate
 import com.google.android.material.button.MaterialButton
@@ -22,13 +20,6 @@ class CaptureView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
   private var captureClickListener: (() -> Unit)? = null
 
   init {
-    layoutParams = LayoutHelper.getFrameParams(
-      context = context,
-      width = CAPTURE_FRAME_DIMEN,
-      height = CAPTURE_FRAME_DIMEN,
-      gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL,
-    )
-    setMargins(bottom = dpToPx(CAPTURE_FRAME_MARGIN.toFloat()) + navBarHeight())
     setupCaptureFrame()
     setupCaptureButton()
   }

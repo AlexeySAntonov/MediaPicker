@@ -55,6 +55,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var overlayImageView: ImageView? = null
   private var detectionSurfaceView: DetectionSurfaceView? = null
   private var zoomSeekBar: ZoomSeekBar? = null
+  private var galleryImageView: ImageView? = null
   private var captureView: CaptureView? = null
   private var mediaPreview: MediaPreview? = null
   private var focusAnimatorSet: AnimatorSet? = null
@@ -81,6 +82,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     setupDetectionSurfaceView()
     setupCloseButton()
     setupZoomSeekBar()
+    setupGalleryButton()
     setupCaptureView()
     setupOverlayImageView()
   }
@@ -123,6 +125,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
           closeImageView?.isVisible = true
           zoomSeekBar?.isVisible = true
           captureView?.isVisible = true
+          galleryImageView?.isVisible = true
         }
 
         override fun onTransitionCancel(transition: Transition) = Unit
@@ -165,6 +168,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         zoomSeekBar?.resetZoom()
         zoomSeekBar?.isVisible = false
         captureView?.isVisible = false
+        galleryImageView?.isVisible = false
       }
 
       override fun onTransitionEnd(transition: Transition) {
@@ -315,12 +319,39 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
 
   private fun setupCaptureView() {
     captureView = CaptureView(context).apply {
+      layoutParams = LayoutHelper.getFrameParams(
+        context = context,
+        width = CAPTURE_FRAME_DIMEN,
+        height = CAPTURE_FRAME_DIMEN,
+        gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL,
+      )
+      setMargins(bottom = dpToPx(CAPTURE_FRAME_MARGIN.toFloat()) + navBarHeight())
       isVisible = false
       onCaptureClick {
         cameraController.onImageCapture({ mediaPreview ?: setupCapturedPreview(it) })
       }
     }
     captureView?.let { addView(it) }
+  }
+
+  private fun setupGalleryButton() {
+    galleryImageView = ImageView(context).apply {
+      layoutParams = LayoutHelper.getFrameParams(
+        context = context,
+        width = GALLERY_IMAGE_DIMEN,
+        height = GALLERY_IMAGE_DIMEN,
+        gravity = Gravity.BOTTOM or Gravity.END,
+        rawRightMargin = (screenWidth / 2 - dpToPx(CAPTURE_FRAME_DIMEN.toFloat() / 2 + GALLERY_IMAGE_DIMEN)) / 2,
+        rawBottomMargin = dpToPx(GALLERY_IMAGE_MARGIN_BOTTOM.toFloat()) + navBarHeight(),
+      )
+      scaleType = ImageView.ScaleType.CENTER
+      setImageResource(R.drawable.ic_gallery_32dp)
+      setColorFilter(Color.WHITE)
+      setBackgroundResource(R.drawable.selector_button_light)
+      isVisible = false
+      setOnClickListener { animateHide() }
+    }
+    galleryImageView?.let { addView(it) }
   }
 
   private fun setupCapturedPreview(file: File) {
@@ -400,6 +431,8 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     private const val FAKE_TOOLBAR_HEIGHT = CLOSE_IMAGE_DIMEN + CLOSE_IMAGE_MARGIN * 2
     private const val FOCUS_VIEW_DIMEN = 48
     private const val SAFE_GAP_BETWEEN_FOCUS_AND_ZOOM = 16
+    private const val GALLERY_IMAGE_DIMEN = 48
+    private const val GALLERY_IMAGE_MARGIN_BOTTOM = 28
 
     const val CAPTURE_APPEARANCE_DURATION = 220L
     private const val CAPTURE_DISAPPEARANCE_DURATION = 120L
