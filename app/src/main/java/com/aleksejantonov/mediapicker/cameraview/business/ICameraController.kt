@@ -1,5 +1,6 @@
 package com.aleksejantonov.mediapicker.cameraview.business
 
+import androidx.annotation.FloatRange
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.Preview
 import androidx.lifecycle.LifecycleOwner
@@ -27,5 +28,6 @@ interface ICameraController {
   fun clearSurfaceProvider()
   fun startFocusAndMetering(action: FocusMeteringAction)
   fun cancelFocusAndMetering()
+  fun setLinearZoom(@FloatRange(from = 0.0, to = 1.0) linearZoom: Float)
   fun releaseCameraProvider()
 }

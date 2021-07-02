@@ -31,6 +31,9 @@ import com.aleksejantonov.mediapicker.base.*
 import com.aleksejantonov.mediapicker.base.ui.AnimatableAppearance
 import com.aleksejantonov.mediapicker.base.ui.LayoutHelper
 import com.aleksejantonov.mediapicker.cameraview.captureview.CaptureView
+import com.aleksejantonov.mediapicker.cameraview.captureview.CaptureView.Companion.CAPTURE_FRAME_DIMEN
+import com.aleksejantonov.mediapicker.cameraview.captureview.CaptureView.Companion.CAPTURE_FRAME_MARGIN
+import com.aleksejantonov.mediapicker.cameraview.zoomseekbar.ZoomSeekBar
 import com.aleksejantonov.mediapicker.mediapreview.MediaPreview
 import java.io.File
 import java.lang.ref.WeakReference
@@ -51,6 +54,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private var closeImageView: ImageView? = null
   private var overlayImageView: ImageView? = null
   private var detectionSurfaceView: DetectionSurfaceView? = null
+  private var zoomSeekBar: ZoomSeekBar? = null
   private var captureView: CaptureView? = null
   private var mediaPreview: MediaPreview? = null
   private var focusAnimatorSet: AnimatorSet? = null
@@ -74,10 +78,11 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
     isClickable = true
     isFocusable = true
     setupPreviewView()
-    setupCloseButton()
-    setupOverlayImageView()
     setupDetectionSurfaceView()
+    setupCloseButton()
+    setupZoomSeekBar()
     setupCaptureView()
+    setupOverlayImageView()
   }
 
   override fun onAttachedToWindow() {
@@ -116,6 +121,7 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
 
         override fun onTransitionEnd(transition: Transition) {
           closeImageView?.isVisible = true
+          zoomSeekBar?.isVisible = true
           captureView?.isVisible = true
         }
 
@@ -156,6 +162,8 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
         overlayImageView?.isVisible = true
         previewView?.isVisible = false
         closeImageView?.isVisible = false
+        zoomSeekBar?.resetZoom()
+        zoomSeekBar?.isVisible = false
         captureView?.isVisible = false
       }
 
@@ -284,6 +292,21 @@ class CameraView(context: Context, attributeSet: AttributeSet? = null) : FrameLa
   private fun setupDetectionSurfaceView() {
     detectionSurfaceView = DetectionSurfaceView(context)
     detectionSurfaceView?.let { addView(it) }
+  }
+
+  private fun setupZoomSeekBar() {
+    zoomSeekBar = ZoomSeekBar(context).apply {
+      layoutParams = LayoutHelper.getFrameParams(
+        context = context,
+        width = LayoutHelper.MATCH_PARENT,
+        height = LayoutHelper.WRAP_CONTENT,
+        gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+      )
+      setMargins(bottom = dpToPx((CAPTURE_FRAME_DIMEN + CAPTURE_FRAME_MARGIN * 2).toFloat()) + navBarHeight())
+      isVisible = false
+      onChange { cameraController.setLinearZoom(it) }
+    }
+    zoomSeekBar?.let { addView(it) }
   }
 
   private fun setupCaptureView() {

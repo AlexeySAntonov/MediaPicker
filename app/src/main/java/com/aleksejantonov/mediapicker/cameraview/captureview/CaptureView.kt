@@ -73,8 +73,8 @@ class CaptureView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
   }
 
   companion object {
-    private const val CAPTURE_FRAME_DIMEN = 64
+    const val CAPTURE_FRAME_DIMEN = 64
+    const val CAPTURE_FRAME_MARGIN = 20
     private const val CAPTURE_BUTTON_DIMEN = 56
-    private const val CAPTURE_FRAME_MARGIN = 20
   }
 }

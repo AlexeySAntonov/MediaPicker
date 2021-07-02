@@ -116,6 +116,10 @@ class CameraController(
     camera?.cameraControl?.cancelFocusAndMetering()
   }
 
+  override fun setLinearZoom(linearZoom: Float) {
+    camera?.cameraControl?.setLinearZoom(linearZoom)
+  }
+
   override fun releaseCameraProvider() {
     cameraProviderFuture?.cancel(true)
     cameraProviderFuture = null
